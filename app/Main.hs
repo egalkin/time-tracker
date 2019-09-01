@@ -1,0 +1,168 @@
+--{-# LANGUAGE TemplateHaskell #-}
+module Main where
+
+import Interface
+
+main = initInterface
+--
+--import Graphics.UI.Gtk
+--import Graphics.UI.Gtk.ModelView as New
+--
+--import Data.IORef
+--import           Control.Monad.ST
+--import qualified Data.Vector.Unboxed         as V
+--import qualified Data.Vector.Unboxed.Mutable as M
+--
+--
+--import qualified Control.Lens as Lens
+--import Control.Lens.Operators
+--
+--import Data.Time.Clock
+--import Data.Time.Clock.System
+--import Data.Time.Calendar
+--
+--import qualified Data.Tree as Tree
+--
+--main = runApp
+--
+--main = do
+--  initGUI
+--
+--  st <- newIORef 0
+--  currentActiveProject <- newIORef 0
+--
+--  gui <- builderNew
+--  builderAddFromFile gui "TreeTest2.glade"
+--
+--  win <- builderGetObject gui castToWindow "window1"
+--  set win [ windowTitle := "Egor's time tracker"]
+--  on win objectDestroy mainQuit
+--
+--  view <- builderGetObject gui castToTreeView "view"
+--
+--  sndView <- builderGetObject gui castToTreeView "treeview2"
+--
+--  stringValue <- builderGetObject gui castToEntry "stringValue"
+--  intValue    <- builderGetObject gui castToSpinButton "intValue"
+--  boolValue   <- builderGetObject gui castToCheckButton "boolValue"
+--
+--  insertButton  <- builderGetObject gui castToButton "insert"
+----  updateButton  <- builderGetObject gui castToButton "update"
+----  taskButton    <- builderGetObject gui castToButton "button1"
+--
+----  newPath       <- builderGetObject gui castToEntry "newPath"
+----  updatePath    <- builderGetObject gui castToEntry "updatePath"
+--
+--  removeButton  <- builderGetObject gui castToButton "remove"
+--  clearButton   <- builderGetObject gui castToButton "clear"
+--
+--  addIssueButton <- builderGetObject gui castToButton "issueButton"
+--
+--  issueNameField <- builderGetObject gui castToEntry "entry1"
+--  issuePriorityField <- builderGetObject gui castToSpinButton "spinbutton1"
+--  issueStartTrackingField <- builderGetObject gui castToCheckButton "checkbutton1"
+--
+--  -- create a new list store
+--  store <- storeImpl
+--  store2 <- storeImpl
+--  New.treeViewSetModel view store
+--  New.treeViewSetModel sndView store2
+--  setupProjectsView view store
+--  setupIssuesView sndView store2
+--
+--  let buildProject = do
+--        name         <- entryGetText stringValue
+--        creationDate <- getCurrentTime >>= return . utctDay
+--
+--        return Project {
+--          _projectName         = name,
+--          _projectCreationDate = creationDate,
+--          _projectTimeRecorded = 0,
+--          _projectIssues       = []
+--        }
+--
+--  let buildIssue = do
+--        name <- entryGetText issueNameField
+--        priority <- spinButtonGetValue issuePriorityField
+--        isTracked <- toggleButtonGetActive issueStartTrackingField
+--        creationDate <- systemSeconds <$> getSystemTime
+--
+--        return Issue {
+--          _issueName = name,
+--          _issuePriority = fromIntegral $ round priority,
+--          _isTracked = isTracked,
+--          _issueCreationDate = fromIntegral creationDate,
+--          _issueTimeRecorded = 0
+--        }
+--
+--
+--  addIssueDialog <- builderGetObject gui castToDialog "addIssueDialog"
+--  dialogAddButton addIssueDialog "Create" ResponseAccept
+----  on sndView rowActivated $ \path row -> do
+--
+----  on addIssueButton buttonActivated $ do
+----    dialogAddButton
+----    stockYes
+----    ResponseYes
+--
+--
+--
+--  on view rowActivated $ \path row -> do
+--    res <- New.listStoreGetValue store (last path)
+--    New.listStoreClear store2
+--    writeIORef currentActiveProject (last path)
+--    mapM_ (New.listStoreInsert store2 0) (res^.projectIssues)
+--
+--  on addIssueButton buttonActivated $ do
+----    addIssueDialog <- builderGetObject gui castToDialog "addIssueDialog"
+--    activeProject <- readIORef currentActiveProject
+--    activeRow     <- New.listStoreGetValue store activeProject
+--    creationDate <- getCurrentTime >>= return . utctDay
+--    widgetShow addIssueDialog
+--    response <- dialogRun addIssueDialog
+--    case response of
+--      ResponseAccept -> addIssue buildIssue activeRow store store2 activeProject
+--      _              -> return ()
+--    widgetHide addIssueDialog
+--
+--
+--  on insertButton buttonActivated $ do
+--    value <- buildProject
+--    path <-  readIORef st
+--    writeIORef st (path + 1)
+--    New.listStoreInsert store path value
+--
+----  on updateButton buttonActivated $ do
+----    value <- getValues
+----    path <- fmap read $ get updatePath entryText
+----    New.treeStoreSetValue store path value
+--
+--  on removeButton buttonActivated $ do
+--    activeProjectPath <- readIORef currentActiveProject
+--    New.listStoreRemove store activeProjectPath
+--    return ()
+--
+--  on clearButton buttonActivated $ do
+--    New.listStoreClear store
+--    New.listStoreClear store2
+--
+--  New.treeViewSetReorderable view True
+--
+--  widgetShowAll win
+--  mainGUI
+--
+--
+--
+--
+--addIssue newIssue activeRow store store2 activeProject = do
+--    issue <- newIssue
+--    let newActiveRow = activeRow & (projectIssues %~ (issue :))
+--    let issues = newActiveRow^.projectIssues
+--    New.listStoreClear store2
+--    mapM_ (New.listStoreInsert store2 0) issuesc
+--    New.listStoreSetValue store activeProject newActiveRow
+--
+--storeImpl =
+--  New.listStoreNew []
+--
+--  where leafNode a = Tree.Node { Tree.rootLabel = a, Tree.subForest = [] }
