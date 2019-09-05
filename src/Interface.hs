@@ -47,7 +47,6 @@ initInterface = do
   on removeButton buttonActivated $ runReaderT removeProject interfaceMainContext
   on showTrackedTimeButton buttonActivated $ (runReaderT $ showTrackedTime trackedTimeDialog) interfaceMainContext
 
-
   widgetShowAll win
   mainGUI
 
@@ -69,7 +68,7 @@ showTrackedTime dialog = do
   context <- ask
   lift $ do
     activeIssue <- readIORef (context^.activeIssue)
-    issue <- View.listStoreGetValue (context^.issuesStore) activeIssue
+    issue <- View.treeStoreGetValue (context^.issuesStore) [activeIssue]
     trackedTime <- countIssueTrackedTime issue
     set (context^.trackedTimeStatusbar) [entryText := show trackedTime ]
     widgetShow dialog
@@ -131,32 +130,29 @@ displayIssues path row = do
   context <- ask
   projectEntity <- lift $ View.listStoreGetValue (context^.projectsStore) (head path)
   lift $ do
-    View.listStoreClear (context^.issuesStore)
+    View.treeStoreClear (context^.issuesStore)
     writeIORef (context^.activeProject) (head path)
-    mapM_ (View.listStoreInsert (context^.issuesStore) 0) (projectEntity^.projectIssues)
+    mapM_ (View.treeStoreInsert (context^.issuesStore) [] 0) (projectEntity^.projectIssues)
 
 addIssue :: Dialog -> ContextIO ()
 addIssue dialog  = do
   context <- ask
-  lift $ do
-    activeProject <- readIORef (context^.activeProject)
-    activeRow     <- View.listStoreGetValue (context^.projectsStore) activeProject
-    widgetShow dialog
-    response <- dialogRun dialog
-    case response of
-      ResponseAccept -> do
-        issue <- runReaderT buildIssue context
-        (runReaderT $ addIssueHelper activeRow issue) context
-      _              -> return ()
-    widgetHide dialog
+  activeProject <- lift $ readIORef (context^.activeProject)
+  activeRow     <- lift $ View.listStoreGetValue (context^.projectsStore) activeProject
+  lift $ widgetShow dialog
+  response <-  lift $ dialogRun dialog
+  case response of
+    ResponseAccept -> buildIssue >>= addIssueHelper activeRow
+    _              -> return ()
+  lift $ widgetHide dialog
 
 addIssueHelper :: Project -> Issue -> ContextIO ()
 addIssueHelper activeRow issue = do
   context <- ask
   let newActiveRow = activeRow & (projectIssues %~ (issue :))
   lift $ do
-   View.listStoreClear (context^.issuesStore)
-   mapM_ (View.listStoreInsert (context^.issuesStore) 0) (newActiveRow^.projectIssues)
+   View.treeStoreClear (context^.issuesStore)
+   mapM_ (View.treeStoreInsert (context^.issuesStore) [] 0) (newActiveRow^.projectIssues)
    currentActiveProject <- readIORef $ context^.activeProject
    View.listStoreSetValue (context^.projectsStore) currentActiveProject newActiveRow
 
@@ -213,19 +209,29 @@ initIssueUiFieldBundle gui = do
 initStores :: TreeViewClass view
              => view
              -> view
-             -> IO (View.ListStore Project, View.ListStore Issue)
+             -> IO (View.ListStore Project, View.TreeStore Issue)
 initStores projectsView issuesView = do
-  projectStore <- storeImpl
-  issuesStore  <- storeImpl
+  projectStore      <- projectsStoreImpl
+  issuesStore       <- issuesStoreImpl
+  sortedIssuesStore <- View.treeModelSortNewWithModel issuesStore
   View.treeViewSetModel projectsView projectStore
-  View.treeViewSetModel issuesView issuesStore
+  View.treeViewSetModel issuesView sortedIssuesStore
   setupProjectsView projectsView projectStore
-  setupIssuesView issuesView issuesStore
+  setupIssuesView issuesView issuesStore sortedIssuesStore
   return (projectStore, issuesStore)
 
-setupIssuesView view model = do
+setupIssuesView :: TreeViewClass view
+                  => view
+                  -> TreeStore Issue
+                  -> TypedTreeModelSort Issue
+                  -> IO ()
+setupIssuesView view issuesStore sortedIssueStore = do
+
   View.treeViewSetHeadersVisible view True
 
+  mapSortFunctionsToIds issuesStore sortedIssueStore 1 (^.issueName)
+  mapSortFunctionsToIds issuesStore sortedIssueStore 2 (^.issuePriority)
+  
   nameCol      <- View.treeViewColumnNew
   priorityCol  <- View.treeViewColumnNew
   createdAtCol <- View.treeViewColumnNew
@@ -236,31 +242,46 @@ setupIssuesView view model = do
   View.treeViewColumnSetTitle createdAtCol "Created"
   View.treeViewColumnSetTitle recordedCol "Time recorded"
 
-  rendererNameCol      <- View.cellRendererTextNew
-  rendererPriorityCol  <- View.cellRendererTextNew
-  rendererCreatedAtCol <- View.cellRendererTextNew
-  rendererRecorderCol  <- View.cellRendererTextNew
+  renderNameCol      <- View.cellRendererTextNew
+  renderPriorityCol  <- View.cellRendererTextNew
+  renderCreatedAtCol <- View.cellRendererTextNew
+  renderRecordedCol  <- View.cellRendererTextNew
 
-  View.cellLayoutPackStart nameCol rendererNameCol True
-  View.cellLayoutPackStart priorityCol rendererPriorityCol True
-  View.cellLayoutPackStart createdAtCol rendererCreatedAtCol True
-  View.cellLayoutPackStart recordedCol rendererRecorderCol True
+  View.cellLayoutPackStart nameCol renderNameCol True
+  View.cellLayoutPackStart priorityCol renderPriorityCol True
+  View.cellLayoutPackStart createdAtCol renderCreatedAtCol True
+  View.cellLayoutPackStart recordedCol renderRecordedCol True
 
-  View.cellLayoutSetAttributes nameCol rendererNameCol model $ \row -> [ View.cellText := row^.issueName ]
-  View.cellLayoutSetAttributes priorityCol rendererPriorityCol model $ \row -> [ View.cellText := show $ row^.issuePriority ]
-  View.cellLayoutSetAttributes createdAtCol rendererRecorderCol model $ \row -> [ View.cellText := show $ row^.issueLastTrackTimestamp]
-  View.cellLayoutSetAttributes createdAtCol rendererCreatedAtCol model $ \row -> [ View.cellText := show $ row^.issueCreationDate ]
+  mapModelsFields nameCol renderNameCol issuesStore sortedIssueStore (^.issueName)
+  mapModelsFields priorityCol renderPriorityCol issuesStore sortedIssueStore (show . (^.issuePriority))
+  mapModelsFields createdAtCol renderCreatedAtCol issuesStore sortedIssueStore (show . (^.issueLastTrackTimestamp) )
+  mapModelsFields recordedCol renderRecordedCol issuesStore sortedIssueStore (show . (^.issueCreationDate) )
+
 
   View.treeViewAppendColumn view nameCol
   View.treeViewAppendColumn view priorityCol
   View.treeViewAppendColumn view createdAtCol
   View.treeViewAppendColumn view recordedCol
 
+  View.treeViewColumnSetSortColumnId nameCol 1
+  View.treeViewColumnSetSortColumnId priorityCol 2
+
+
+mapModelsFields col render model sortedModel displayFunc =
+  View.cellLayoutSetAttributeFunc col render sortedModel $ \iter -> do
+       cIter <- View.treeModelSortConvertIterToChildIter sortedModel iter
+       issue <- View.treeModelGetRow model cIter
+       set render [View.cellText := displayFunc issue]
+       
+mapSortFunctionsToIds issuesStore sortedIssueStore funcId compareField = 
+  View.treeSortableSetSortFunc sortedIssueStore funcId $ \iter1 iter2 -> do
+      issue1 <- View.customStoreGetRow issuesStore iter1
+      issue2 <- View.customStoreGetRow issuesStore iter2
+      return (compare (compareField issue1) (compareField issue2))       
 
 setupProjectsView view model = do
   View.treeViewSetHeadersVisible view True
 
-  -- add three columns
   nameCol <- View.treeViewColumnNew
   createdAtCol <- View.treeViewColumnNew
   recordedCol <- View.treeViewColumnNew
@@ -287,8 +308,9 @@ setupProjectsView view model = do
   View.treeViewAppendColumn view recordedCol
 
 
-storeImpl =
-  View.listStoreNew []
+projectsStoreImpl = View.listStoreNew []
+
+issuesStoreImpl = View.treeStoreNew []
 
 
 secondsInHour = 3600

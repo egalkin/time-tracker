@@ -5,6 +5,7 @@ module Types where
 import Graphics.UI.Gtk
 import Control.Lens
 
+import Data.Semigroup
 import Data.IORef
 
 import Data.Time.Calendar
@@ -38,12 +39,15 @@ data IssueUiFieldsBundle = IssueUiFieldsBundle {
 data TrackedTime = TrackedTime {
     _hours   :: Int
   , _minutes :: Int
-} deriving (Show)
+}
+
+instance Show TrackedTime where
+  show (TrackedTime hr mi) = show hr <> "::" <> show mi
 
 data InterfaceMainContext = InterfaceMainContext {
   _projectsStore         :: ListStore Project,
   _projectUiFieldsBundle :: ProjectUiFieldsBundle,
-  _issuesStore           :: ListStore Issue,
+  _issuesStore           :: TreeStore Issue,
   _issueUiFieldsBundle   :: IssueUiFieldsBundle,
   _activeProject         :: IORef Int,
   _activeIssue           :: IORef Int,
