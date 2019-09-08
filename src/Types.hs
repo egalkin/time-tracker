@@ -44,6 +44,7 @@ data TrackedTime = TrackedTime {
 instance Show TrackedTime where
   show (TrackedTime hr mi) = show hr <> "::" <> show mi
 
+
 data InterfaceMainContext = InterfaceMainContext {
   _projectsStore         :: ListStore Project,
   _projectUiFieldsBundle :: ProjectUiFieldsBundle,
@@ -59,3 +60,7 @@ makeLenses ''ProjectUiFieldsBundle
 makeLenses ''Issue
 makeLenses ''IssueUiFieldsBundle
 makeLenses ''InterfaceMainContext
+makeLenses ''TrackedTime
+
+trackedTimeToInt :: TrackedTime -> Int
+trackedTimeToInt time = time^.hours * 3600 + time^.minutes * 60

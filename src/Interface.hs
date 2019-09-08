@@ -11,9 +11,15 @@ import Types
 
 import Control.Lens.Operators
 
+import IssueParser
+
 import Data.Time.Clock
 import Data.Time.Clock.System
 import Data.Time.Calendar
+
+import Text.Megaparsec.Error
+
+import Data.Either
 
 type ContextIO a = ReaderT InterfaceMainContext IO a
 
@@ -34,6 +40,7 @@ initInterface = do
 
   addIssueDialog       <- initAddIssueDialog gui
   trackedTimeDialog    <- initTrackedTimeDialog gui
+  fileChooserDialog    <- initFileChooserDialog win
 
   insertButton   <- builderGetObject gui castToButton "insert"
   addIssueButton <- builderGetObject gui castToButton "issueButton"
@@ -41,14 +48,65 @@ initInterface = do
   removeButton  <- builderGetObject gui castToButton "remove"
   clearButton   <- builderGetObject gui castToButton "clear"
 
+  parseItem     <- builderGetObject gui castToMenuItem "parseIssues"
+
+  on parseItem menuItemActivated $ (runReaderT $ openFileChooser fileChooserDialog) interfaceMainContext
   on insertButton buttonActivated $ runReaderT addProject interfaceMainContext
   on projectsView rowActivated $ \path row -> (runReaderT $ displayIssues path row) interfaceMainContext
   on addIssueButton buttonActivated $ (runReaderT $ addIssue addIssueDialog) interfaceMainContext
   on removeButton buttonActivated $ runReaderT removeProject interfaceMainContext
   on showTrackedTimeButton buttonActivated $ (runReaderT $ showTrackedTime trackedTimeDialog) interfaceMainContext
 
+
   widgetShowAll win
   mainGUI
+
+
+initFileChooserDialog :: Window -> IO FileChooserDialog
+initFileChooserDialog win = do
+  dialog <- fileChooserDialogNew
+              (Just $ "Demo of the standard dialog to select "
+                         ++ "an existing file")
+              (Just win)
+              FileChooserActionOpen
+              [("gtk-cancel"
+               ,ResponseCancel)
+              ,("gtk-open"
+               , ResponseAccept)]
+  isfilt <- fileFilterNew
+  fileFilterAddPattern isfilt "*.is"
+  fileFilterSetName isfilt "Files with issues data"
+
+  fileChooserAddFilter dialog isfilt
+  return dialog
+
+openFileChooser :: FileChooserDialog -> ContextIO ()
+openFileChooser dialog = do
+  context <- ask
+  activeProject <- lift $ readIORef (context^.activeProject)
+  activeRow     <- lift $ View.listStoreGetValue (context^.projectsStore) activeProject
+  lift $ widgetShow dialog
+  response <- lift $ dialogRun dialog
+  case response of
+    ResponseAccept -> do Just fileName    <- lift $ fileChooserGetFilename dialog
+                         parsedIssuesData <- lift $ parseIssues fileName
+                         handleParsedData parsedIssuesData
+
+    ResponseCancel -> return ()
+    ResponseDeleteEvent -> return ()
+  lift $ widgetHide dialog
+
+handleParsedData :: [Either (ParseError Char Dec) Issue] -> ContextIO ()
+handleParsedData issues = do
+  context <- ask
+  activeProject <- lift $ readIORef (context^.activeProject)
+  activeRow     <- lift $ View.listStoreGetValue (context^.projectsStore) activeProject
+  let (_, correctlyParsedIssues) = partitionEithers issues
+  let newActiveRow = activeRow & (projectIssues %~ (++ correctlyParsedIssues))
+  lift $ do
+    View.treeStoreClear (context^.issuesStore)
+    mapM_ (View.treeStoreInsert (context^.issuesStore) [] 0) (newActiveRow^.projectIssues)
+    View.listStoreSetValue (context^.projectsStore) activeProject newActiveRow
 
 convertSecondsToTrackedTime :: Int -> TrackedTime
 convertSecondsToTrackedTime seconds = do
@@ -94,7 +152,7 @@ buildProject = do
   context      <- ask
   lift $ do
     name         <- entryGetText (context^.projectUiFieldsBundle.projectNameField)
-    creationDate <- getCurrentTime >>= return . utctDay
+    creationDate <- utctDay <$> getCurrentTime
 
     return Project {
       _projectName         = name,
@@ -175,7 +233,7 @@ buildIssue = do
   lift $ do
     name           <- entryGetText $ context^.issueUiFieldsBundle.issueNameField
     priority       <- fromIntegral.round <$> (spinButtonGetValue $ context^.issueUiFieldsBundle.issuePriorityField)
-    creationDate   <- getCurrentTime >>= return . utctDay
+    creationDate   <- utctDay <$> getCurrentTime
     timestamp      <- fromIntegral.systemSeconds <$> getSystemTime
     trackingStatus <- toggleButtonGetActive $ context^.issueUiFieldsBundle.issueTrackingStatusField
 
@@ -254,8 +312,8 @@ setupIssuesView view issuesStore sortedIssueStore = do
 
   mapModelsFields nameCol renderNameCol issuesStore sortedIssueStore (^.issueName)
   mapModelsFields priorityCol renderPriorityCol issuesStore sortedIssueStore (show . (^.issuePriority))
-  mapModelsFields createdAtCol renderCreatedAtCol issuesStore sortedIssueStore (show . (^.issueLastTrackTimestamp) )
-  mapModelsFields recordedCol renderRecordedCol issuesStore sortedIssueStore (show . (^.issueCreationDate) )
+  mapModelsFields createdAtCol renderCreatedAtCol issuesStore sortedIssueStore (show . (^.issueCreationDate) )
+  mapModelsFields recordedCol renderRecordedCol issuesStore sortedIssueStore (show . (^.issueTimeRecorded) )
 
 
   View.treeViewAppendColumn view nameCol
