@@ -53,6 +53,7 @@ initInterface = do
   on parseItem menuItemActivated $ (runReaderT $ openFileChooser fileChooserDialog) interfaceMainContext
   on insertButton buttonActivated $ runReaderT addProject interfaceMainContext
   on projectsView rowActivated $ \path row -> (runReaderT $ displayIssues path row) interfaceMainContext
+  on issuesView rowActivated $ \path row -> (runReaderT $ writeCurrentIssue path row) interfaceMainContext
   on addIssueButton buttonActivated $ (runReaderT $ addIssue addIssueDialog) interfaceMainContext
   on removeButton buttonActivated $ runReaderT removeProject interfaceMainContext
   on showTrackedTimeButton buttonActivated $ (runReaderT $ showTrackedTime trackedTimeDialog) interfaceMainContext
@@ -60,7 +61,6 @@ initInterface = do
 
   widgetShowAll win
   mainGUI
-
 
 initFileChooserDialog :: Window -> IO FileChooserDialog
 initFileChooserDialog win = do
@@ -80,33 +80,42 @@ initFileChooserDialog win = do
   fileChooserAddFilter dialog isfilt
   return dialog
 
-openFileChooser :: FileChooserDialog -> ContextIO ()
-openFileChooser dialog = do
-  context <- ask
-  activeProject <- lift $ readIORef (context^.activeProject)
-  activeRow     <- lift $ View.listStoreGetValue (context^.projectsStore) activeProject
+fileChooserOpener :: FileChooserDialog -> Int -> ContextIO ()
+fileChooserOpener dialog project = do
   lift $ widgetShow dialog
   response <- lift $ dialogRun dialog
   case response of
     ResponseAccept -> do Just fileName    <- lift $ fileChooserGetFilename dialog
                          parsedIssuesData <- lift $ parseIssues fileName
-                         handleParsedData parsedIssuesData
+                         handleParsedData parsedIssuesData project
 
     ResponseCancel -> return ()
     ResponseDeleteEvent -> return ()
   lift $ widgetHide dialog
 
-handleParsedData :: [Either (ParseError Char Dec) Issue] -> ContextIO ()
-handleParsedData issues = do
+showNoProjectChosen = undefined
+
+openFileChooser :: FileChooserDialog -> ContextIO ()
+openFileChooser dialog = do
   context <- ask
   activeProject <- lift $ readIORef (context^.activeProject)
-  activeRow     <- lift $ View.listStoreGetValue (context^.projectsStore) activeProject
+  case activeProject of
+    Just project -> fileChooserOpener dialog project
+    Nothing      -> showNoProjectChosen
+
+handleParsedData :: [Either (ParseError Char Dec) Issue] -> Int -> ContextIO ()
+handleParsedData issues project = do
+  context <- ask
+  activeRow     <- lift $ View.listStoreGetValue (context^.projectsStore) project
   let (_, correctlyParsedIssues) = partitionEithers issues
-  let newActiveRow = activeRow & (projectIssues %~ (++ correctlyParsedIssues))
+  currentTime <- lift (fromIntegral.systemSeconds <$> getSystemTime)
+  lift $ putStrLn $ show correctlyParsedIssues
+  let newActiveRow = activeRow & (projectIssues %~ (++ (map (issueLastTrackTimestamp.~currentTime) correctlyParsedIssues)))
+  lift $ putStrLn $ show $ newActiveRow^.projectIssues
   lift $ do
     View.treeStoreClear (context^.issuesStore)
     mapM_ (View.treeStoreInsert (context^.issuesStore) [] 0) (newActiveRow^.projectIssues)
-    View.listStoreSetValue (context^.projectsStore) activeProject newActiveRow
+    View.listStoreSetValue (context^.projectsStore) project newActiveRow
 
 convertSecondsToTrackedTime :: Int -> TrackedTime
 convertSecondsToTrackedTime seconds = do
@@ -118,20 +127,24 @@ countIssueTrackedTime :: Issue -> IO TrackedTime
 countIssueTrackedTime issue
   | issue^.issueTrackingStatus       = return $ convertSecondsToTrackedTime $ issue^.issueTimeRecorded
   | not (issue^.issueTrackingStatus) = do
-      systemTime <- getSystemTime
-      return $ convertSecondsToTrackedTime (issue^.issueTimeRecorded + ((fromIntegral $ systemSeconds systemTime) - issue^.issueLastTrackTimestamp))
+      currentTimestamp <- fromIntegral.systemSeconds <$> getSystemTime
+      return $ convertSecondsToTrackedTime (issue^.issueTimeRecorded + (currentTimestamp - issue^.issueLastTrackTimestamp))
 
 showTrackedTime :: Dialog -> ContextIO ()
 showTrackedTime dialog = do
   context <- ask
   lift $ do
     activeIssue <- readIORef (context^.activeIssue)
-    issue <- View.treeStoreGetValue (context^.issuesStore) [activeIssue]
-    trackedTime <- countIssueTrackedTime issue
-    set (context^.trackedTimeStatusbar) [entryText := show trackedTime ]
-    widgetShow dialog
-    dialogRun dialog
-    widgetHide dialog
+    case activeIssue of
+      Just issueId -> do
+                        issue <- View.treeStoreGetValue (context^.issuesStore) [issueId]
+                        trackedTime <- countIssueTrackedTime issue
+                        set (context^.trackedTimeStatusbar) [entryText := show trackedTime ]
+                        widgetShow dialog
+                        dialogRun dialog
+                        widgetHide dialog
+      Nothing      -> showNoProjectChosen
+
 
 
 removeProject :: ContextIO ()
@@ -139,7 +152,12 @@ removeProject = do
   context <- ask
   lift $ do
     activeProject <- readIORef $ context^.activeProject
-    View.listStoreRemove (context^.projectsStore) activeProject
+    case activeProject of
+      Just project -> do
+                        View.listStoreRemove (context^.projectsStore) project
+                        View.treeStoreClear (context^.issuesStore)
+      Nothing      -> showNoProjectChosen
+
 
 addProject :: ContextIO ()
 addProject = do
@@ -169,8 +187,8 @@ buildMainContext gui projectsView issuesView = do
   (projectsStore, issuesStore) <- initStores projectsView issuesView
   projectUiFieldsBundle        <- initProjectUiFieldBundle gui
   issueUiFieldsBundle          <- initIssueUiFieldBundle gui
-  activeProject                <- newIORef 0
-  activeIssue                  <- newIORef 0
+  activeProject                <- newIORef Nothing
+  activeIssue                  <- newIORef Nothing
   trackedTimeStatusbar         <- builderGetObject gui castToEntry "issueTimeTrackedStatus"
 
   return InterfaceMainContext {
@@ -189,30 +207,42 @@ displayIssues path row = do
   projectEntity <- lift $ View.listStoreGetValue (context^.projectsStore) (head path)
   lift $ do
     View.treeStoreClear (context^.issuesStore)
-    writeIORef (context^.activeProject) (head path)
+    writeIORef (context^.activeProject) (Just $ head path)
+    writeIORef (context^.activeIssue) Nothing
     mapM_ (View.treeStoreInsert (context^.issuesStore) [] 0) (projectEntity^.projectIssues)
+    
+writeCurrentIssue :: TreePath -> TreeViewColumn -> ContextIO ()
+writeCurrentIssue path row = do
+  context <- ask 
+  lift $ writeIORef (context^.activeIssue) (Just $ head path)    
+
+addIssueToProject :: Dialog -> Int -> ContextIO ()
+addIssueToProject dialog project = do
+  context       <- ask
+  activeRow     <- lift $ View.listStoreGetValue (context^.projectsStore) project
+  lift $ widgetShow dialog
+  response <-  lift $ dialogRun dialog
+  case response of
+    ResponseAccept -> buildIssue >>= addIssueHelper activeRow project
+    _              -> return ()
+  lift $ widgetHide dialog
 
 addIssue :: Dialog -> ContextIO ()
 addIssue dialog  = do
   context <- ask
   activeProject <- lift $ readIORef (context^.activeProject)
-  activeRow     <- lift $ View.listStoreGetValue (context^.projectsStore) activeProject
-  lift $ widgetShow dialog
-  response <-  lift $ dialogRun dialog
-  case response of
-    ResponseAccept -> buildIssue >>= addIssueHelper activeRow
-    _              -> return ()
-  lift $ widgetHide dialog
+  case activeProject of
+    Just project -> addIssueToProject dialog project
+    Nothing      -> showNoProjectChosen
 
-addIssueHelper :: Project -> Issue -> ContextIO ()
-addIssueHelper activeRow issue = do
+addIssueHelper :: Project -> Int -> Issue -> ContextIO ()
+addIssueHelper activeRow project issue = do
   context <- ask
   let newActiveRow = activeRow & (projectIssues %~ (issue :))
   lift $ do
    View.treeStoreClear (context^.issuesStore)
    mapM_ (View.treeStoreInsert (context^.issuesStore) [] 0) (newActiveRow^.projectIssues)
-   currentActiveProject <- readIORef $ context^.activeProject
-   View.listStoreSetValue (context^.projectsStore) currentActiveProject newActiveRow
+   View.listStoreSetValue (context^.projectsStore) project newActiveRow
 
 
 initAddIssueDialog :: Builder -> IO Dialog
@@ -371,4 +401,4 @@ projectsStoreImpl = View.listStoreNew []
 issuesStoreImpl = View.treeStoreNew []
 
 
-secondsInHour = 3600
+secondsInHour = 3600 

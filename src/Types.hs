@@ -50,8 +50,8 @@ data InterfaceMainContext = InterfaceMainContext {
   _projectUiFieldsBundle :: ProjectUiFieldsBundle,
   _issuesStore           :: TreeStore Issue,
   _issueUiFieldsBundle   :: IssueUiFieldsBundle,
-  _activeProject         :: IORef Int,
-  _activeIssue           :: IORef Int,
+  _activeProject         :: IORef (Maybe Int),
+  _activeIssue           :: IORef (Maybe Int),
   _trackedTimeStatusbar  :: Entry
 }
 
