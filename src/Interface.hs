@@ -22,6 +22,7 @@ import Text.Megaparsec.Error
 import Data.Either
 
 type ContextIO a = ReaderT InterfaceMainContext IO a
+type Message = String
 
 initInterface = do
   initGUI
@@ -93,8 +94,6 @@ fileChooserOpener dialog project = do
     ResponseDeleteEvent -> return ()
   lift $ widgetHide dialog
 
-showNoProjectChosen = undefined
-
 openFileChooser :: FileChooserDialog -> ContextIO ()
 openFileChooser dialog = do
   context <- ask
@@ -125,38 +124,38 @@ convertSecondsToTrackedTime seconds = do
 
 countIssueTrackedTime :: Issue -> IO TrackedTime
 countIssueTrackedTime issue
-  | issue^.issueTrackingStatus       = return $ convertSecondsToTrackedTime $ issue^.issueTimeRecorded
-  | not (issue^.issueTrackingStatus) = do
-      currentTimestamp <- fromIntegral.systemSeconds <$> getSystemTime
+  | not (issue^.issueTrackingStatus) = return $ convertSecondsToTrackedTime $ issue^.issueTimeRecorded
+  | issue^.issueTrackingStatus       = do
+      currentTimestamp <- fromIntegral.systemSeconds <$> getSystemTime 
       return $ convertSecondsToTrackedTime (issue^.issueTimeRecorded + (currentTimestamp - issue^.issueLastTrackTimestamp))
 
 showTrackedTime :: Dialog -> ContextIO ()
 showTrackedTime dialog = do
   context <- ask
-  lift $ do
-    activeIssue <- readIORef (context^.activeIssue)
-    case activeIssue of
-      Just issueId -> do
-                        issue <- View.treeStoreGetValue (context^.issuesStore) [issueId]
-                        trackedTime <- countIssueTrackedTime issue
-                        set (context^.trackedTimeStatusbar) [entryText := show trackedTime ]
-                        widgetShow dialog
-                        dialogRun dialog
-                        widgetHide dialog
-      Nothing      -> showNoProjectChosen
+  activeIssue <- lift $ readIORef (context^.activeIssue)
+  case activeIssue of
+    Just issueId -> lift $ do
+                      issue <- View.treeStoreGetValue (context^.issuesStore) [issueId]
+                      trackedTime <- countIssueTrackedTime issue
+                      contextId <- statusbarGetContextId (context^.notificationStatusbar) ""
+                      statusbarPush (context^.trackedTimeStatusbar) contextId ("Issue time tracked: " ++ show trackedTime)
+                      widgetShow dialog
+                      dialogRun dialog
+                      widgetHide dialog
+                      statusbarPop (context^.trackedTimeStatusbar) contextId
+    Nothing      -> showNoIssueChosen
 
 
 
 removeProject :: ContextIO ()
 removeProject = do
   context <- ask
-  lift $ do
-    activeProject <- readIORef $ context^.activeProject
-    case activeProject of
-      Just project -> do
-                        View.listStoreRemove (context^.projectsStore) project
-                        View.treeStoreClear (context^.issuesStore)
-      Nothing      -> showNoProjectChosen
+  activeProject <- lift $ readIORef $ context^.activeProject
+  case activeProject of
+    Just project -> lift $ do
+                      View.listStoreRemove (context^.projectsStore) project
+                      View.treeStoreClear (context^.issuesStore)
+    Nothing      -> showNoProjectChosen
 
 
 addProject :: ContextIO ()
@@ -189,7 +188,9 @@ buildMainContext gui projectsView issuesView = do
   issueUiFieldsBundle          <- initIssueUiFieldBundle gui
   activeProject                <- newIORef Nothing
   activeIssue                  <- newIORef Nothing
-  trackedTimeStatusbar         <- builderGetObject gui castToEntry "issueTimeTrackedStatus"
+  trackedTimeStatusbar         <- builderGetObject gui castToStatusbar "issueTimeTrackedStatusbar"
+  notificationDialog           <- builderGetObject gui castToDialog "notificationDialog"
+  notificationStatusbar        <- builderGetObject gui castToStatusbar "notificationStatusbar"
 
   return InterfaceMainContext {
     _projectsStore = projectsStore,
@@ -198,8 +199,29 @@ buildMainContext gui projectsView issuesView = do
     _issueUiFieldsBundle = issueUiFieldsBundle,
     _activeProject = activeProject,
     _activeIssue = activeIssue,
-    _trackedTimeStatusbar = trackedTimeStatusbar
+    _trackedTimeStatusbar = trackedTimeStatusbar,
+    _notificationDialog   = notificationDialog,
+    _notificationStatusbar = notificationStatusbar
   }
+
+showNoProjectChosen :: ContextIO ()
+showNoProjectChosen = showNotification "Project not chosen!"
+
+showNoIssueChosen :: ContextIO ()
+showNoIssueChosen = showNotification "Issue not chosen!"
+
+showNotification :: Message -> ContextIO ()
+showNotification message = do
+  context <- ask
+  lift $ do
+    contextId <- statusbarGetContextId (context^.notificationStatusbar) ""
+    statusbarPush (context^.notificationStatusbar) contextId message
+    widgetShow (context^.notificationDialog)
+    dialogRun (context^.notificationDialog)
+    widgetHide (context^.notificationDialog)
+    statusbarPop (context^.notificationStatusbar) contextId
+
+
 
 displayIssues :: TreePath -> TreeViewColumn -> ContextIO ()
 displayIssues path row = do

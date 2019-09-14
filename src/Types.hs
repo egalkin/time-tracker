@@ -42,7 +42,13 @@ data TrackedTime = TrackedTime {
 }
 
 instance Show TrackedTime where
-  show (TrackedTime hr mi) = show hr <> "::" <> show mi
+  show (TrackedTime hr mi) = show hr <> ":" <> showSeconds mi
+    where
+      showSeconds mi = 
+        case mi `div` 10 of
+        0   -> "0" ++ show mi
+        _   -> show mi
+        
 
 
 data InterfaceMainContext = InterfaceMainContext {
@@ -52,7 +58,9 @@ data InterfaceMainContext = InterfaceMainContext {
   _issueUiFieldsBundle   :: IssueUiFieldsBundle,
   _activeProject         :: IORef (Maybe Int),
   _activeIssue           :: IORef (Maybe Int),
-  _trackedTimeStatusbar  :: Entry
+  _trackedTimeStatusbar  :: Statusbar,
+  _notificationDialog    :: Dialog,
+  _notificationStatusbar :: Statusbar
 }
 
 makeLenses ''Project
