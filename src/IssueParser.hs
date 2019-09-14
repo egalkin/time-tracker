@@ -34,7 +34,7 @@ parseIssues path = do
 issue :: Parser Issue
 issue = do
   sc
-  _issueName               <- name
+  _issueName               <- concat <$> name
   char '|'
   _issuePriority           <- priority
   char '|'
@@ -50,9 +50,14 @@ issue = do
 sc :: Parser ()
 sc = L.space (void $ some (char ' ' <|> char '\t')) empty empty
 
+word :: Parser String 
+word = do
+  word <- some letterChar 
+  ws   <- many $ char ' ' 
+  return $ word ++ ws
 
-name :: Parser String
-name = some letterChar <* sc
+name :: Parser [String]
+name = some word
 
 priority :: Parser Int
 priority = fromIntegral <$> L.integer <* sc
@@ -72,7 +77,12 @@ mins :: Parser Int
 mins = try withLeadingZero <|> withoutLeadingZero
   where
     withLeadingZero    = read . (: []) <$> (char '0' *> digitChar)
-    withoutLeadingZero = fromIntegral <$> L.integer
+    withoutLeadingZero = do 
+      fDigit <- satisfy (\c -> c >='0' && c <= '5')
+      sDigit <- digitChar
+      return $ read [fDigit, sDigit]
+      
+      
 
 trackingStatus :: Parser Bool
 trackingStatus =  read <$> choice [string "True", string "False"] <* sc
