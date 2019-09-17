@@ -3,10 +3,10 @@
 module Types where
 
 import Graphics.UI.Gtk
-import Control.Lens
 
-import Data.Semigroup
 import Data.IORef
+
+import Control.Monad.Reader
 
 import Data.Time.Calendar
 
@@ -36,20 +36,8 @@ data IssueUiFieldsBundle = IssueUiFieldsBundle {
   , _issueTrackingStatusField :: CheckButton
 }
 
-data TrackedTime = TrackedTime {
-    _hours   :: Int
-  , _minutes :: Int
-}
-
-instance Show TrackedTime where
-  show (TrackedTime hr mi) = show hr <> ":" <> showSeconds mi
-    where
-      showSeconds mi = 
-        case mi `div` 10 of
-        0   -> "0" ++ show mi
-        _   -> show mi
-        
-
+type ContextIO a = ReaderT InterfaceMainContext IO a
+type Message = String
 
 data InterfaceMainContext = InterfaceMainContext {
   _projectsStore         :: ListStore Project,
@@ -63,12 +51,4 @@ data InterfaceMainContext = InterfaceMainContext {
   _notificationStatusbar :: Statusbar
 }
 
-makeLenses ''Project
-makeLenses ''ProjectUiFieldsBundle
-makeLenses ''Issue
-makeLenses ''IssueUiFieldsBundle
-makeLenses ''InterfaceMainContext
-makeLenses ''TrackedTime
 
-trackedTimeToInt :: TrackedTime -> Int
-trackedTimeToInt time = time^.hours * 3600 + time^.minutes * 60

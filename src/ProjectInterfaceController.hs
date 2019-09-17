@@ -1,0 +1,56 @@
+module ProjectInterfaceController where
+
+import Graphics.UI.Gtk
+import Graphics.UI.Gtk.ModelView as View
+
+import PrimaryInterface
+import Control.Monad.Reader
+import Control.Lens.Operators
+import Data.IORef
+import TimeUtils
+import Types(ContextIO, Project(..))
+import TypesLenses
+import Notifications
+
+clearProjects :: ContextIO ()
+clearProjects = do
+  context <- ask
+  lift $ do
+    View.treeStoreClear (context^.issuesStore)
+    View.listStoreClear (context^.projectsStore)
+    writeIORef (context^.activeProject) Nothing
+    writeIORef (context^.activeIssue) Nothing
+
+
+addProject :: ContextIO ()
+addProject = do
+  context   <- ask
+  project   <- buildProject
+  lift $ do
+    View.listStoreAppend (context^.projectsStore) project
+    return ()
+
+buildProject :: ContextIO Project
+buildProject = do
+  context      <- ask
+  lift $ do
+    name         <- entryGetText (context^.projectUiFieldsBundle.projectNameField)
+    creationDate <- getCurrentDate
+
+    return Project {
+      _projectName         = name,
+      _projectCreationDate = creationDate,
+      _projectTimeRecorded = 0,
+      _projectIssues       = []
+    }
+
+
+removeProject :: ContextIO ()
+removeProject = do
+  context <- ask
+  currentActiveProject <- lift $ readIORef $ context^.activeProject
+  case currentActiveProject of
+    Just project -> lift $ do
+                      View.listStoreRemove (context^.projectsStore) project
+                      View.treeStoreClear (context^.issuesStore)
+    Nothing      -> showNoProjectChosen

@@ -31,6 +31,17 @@ library
     , Interface
     , Types
     , IssueParser
+    , TimeUtils
+    , PrimaryInterface
+    , ProjectInterfaceController
+    , TypesLenses
+    , IssueInterfaceController
+    , IssueInterfaceView
+    , ProjectInterfaceView
+    , Notifications
+    , Dialogs
+    , TrackedTime
+
   other-modules:
       Paths_time_tracker
   hs-source-dirs:

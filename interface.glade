@@ -19,6 +19,7 @@
     <property name="stock">gtk-missing-image</property>
   </object>
   <object class="GtkWindow" id="appWindow">
+    <property name="height_request">600</property>
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Egor's time tracker</property>
     <property name="resizable">False</property>
@@ -108,6 +109,9 @@
                             <property name="column_spacing">18</property>
                             <property name="row_spacing">4</property>
                             <child>
+                              <placeholder/>
+                            </child>
+                            <child>
                               <object class="GtkEntry" id="projectNameField">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
@@ -152,9 +156,6 @@
                                 <property name="y_options"/>
                               </packing>
                             </child>
-                            <child>
-                              <placeholder/>
-                            </child>
                           </object>
                         </child>
                         <child type="label">
@@ -176,6 +177,7 @@
                       <object class="GtkHBox" id="hbox3">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="spacing">6</property>
                         <child>
                           <object class="GtkButton" id="remove">
                             <property name="label" translatable="yes">delete</property>
@@ -205,10 +207,23 @@
                             <property name="position">1</property>
                           </packing>
                         </child>
+                        <child>
+                          <object class="GtkButton" id="projectTrackedTime">
+                            <property name="label" translatable="yes">Project Tracked TIme</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                          </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">2</property>
+                          </packing>
+                        </child>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
                         <property name="position">1</property>
                       </packing>
                     </child>
