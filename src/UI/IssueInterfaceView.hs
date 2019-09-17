@@ -1,4 +1,4 @@
-module IssueInterfaceView
+module UI.IssueInterfaceView
      ( initIssueUiFieldBundle
      , setupIssuesView
      )where

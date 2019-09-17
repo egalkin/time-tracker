@@ -22,7 +22,7 @@ instance Binary Project where
     put (_projectTimeRecorded project)
     put (_projectIssues project)
   get = do
-    _projectName <- get
+    _projectName         <- get
     _projectCreationDate <- get >>= parseTimeM True defaultTimeLocale "%Y-%-m-%-d"
     _projectTimeRecorded <- get
     _projectIssues       <- get

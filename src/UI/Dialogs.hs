@@ -1,4 +1,4 @@
-module Dialogs where
+module UI.Dialogs where
 
 import Graphics.UI.Gtk
 

@@ -1,17 +1,17 @@
-module ProjectInterfaceController where
+module UI.Controllers.ProjectInterfaceController where
 
 import Graphics.UI.Gtk
 import Graphics.UI.Gtk.ModelView as View
 
-import PrimaryInterface
+import UI.PrimaryInterface
 import Control.Monad.Reader
 import Control.Lens.Operators
 import Data.IORef
-import TimeUtils
+import Utils.TimeUtils
 import Model.Types(ContextIO)
 import Model.Project
 import Model.TypesLenses
-import Notifications
+import UI.Notifications
 
 clearProjects :: ContextIO ()
 clearProjects = do

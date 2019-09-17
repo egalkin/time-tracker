@@ -1,4 +1,4 @@
-module FileParsingController
+module UI.Controllers.FileParsingController
      ( initFileChooserDialog
      , openFileChooser
      )where
@@ -15,9 +15,9 @@ import Model.Project
 import Model.TypesLenses
 import Control.Lens.Operators
 import Text.Megaparsec.Error
-import IssueParser
-import TimeUtils
-import Notifications
+import Parsers.IssueParser
+import Utils.TimeUtils
+import UI.Notifications
 
 import Control.Monad.Reader
 

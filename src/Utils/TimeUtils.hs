@@ -1,4 +1,4 @@
-module TimeUtils where
+module Utils.TimeUtils where
 
 import Data.Time.Calendar
 import Data.Time.Clock

@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module IssueParser 
+module Parsers.IssueParser 
   ( parseIssues
   ) where
 
@@ -23,7 +23,7 @@ import Control.Applicative
 import Control.Monad (void)
 
 import Model.Issue
-import TrackedTime
+import Model.TrackedTime
 
 import Data.Time.Clock.System
 

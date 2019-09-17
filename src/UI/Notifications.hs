@@ -1,4 +1,4 @@
-module Notifications
+module UI.Notifications
      ( showNoIssueChosen
      , showNoProjectChosen     
      )where

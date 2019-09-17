@@ -1,4 +1,4 @@
-module IssueInterfaceController where
+module UI.Controllers.IssueInterfaceController where
 
 import Graphics.UI.Gtk
 import Graphics.UI.Gtk.ModelView as View
@@ -8,13 +8,13 @@ import Model.Issue
 import Model.Project
 import Model.TypesLenses
 import Control.Lens.Operators
-import PrimaryInterface
+import UI.PrimaryInterface
 
 import Data.IORef
 import Control.Monad.Reader
 
-import Notifications
-import TimeUtils
+import UI.Notifications
+import Utils.TimeUtils
 
 displayIssues :: TreePath -> TreeViewColumn -> ContextIO ()
 displayIssues path row = do

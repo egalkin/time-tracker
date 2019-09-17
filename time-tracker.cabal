@@ -27,23 +27,23 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
-    , Interface
-    , Model.Types
-    , IssueParser
-    , TimeUtils
-    , PrimaryInterface
-    , ProjectInterfaceController
-    , Model.TypesLenses
-    , IssueInterfaceController
-    , IssueInterfaceView
-    , ProjectInterfaceView
-    , Notifications
-    , Dialogs
-    , TrackedTime
-    , FileParsingController
+      Model.Types
     , Model.Issue
     , Model.Project
+    , Model.TrackedTime
+    , Model.TypesLenses
+    , UI.Interface
+    , UI.PrimaryInterface
+    , UI.IssueInterfaceView
+    , UI.ProjectInterfaceView
+    , UI.Notifications
+    , UI.Dialogs
+    , UI.TrackedTimeView
+    , UI.Controllers.ProjectInterfaceController
+    , UI.Controllers.IssueInterfaceController
+    , UI.Controllers.FileParsingController
+    , Parsers.IssueParser
+    , Utils.TimeUtils
 
   other-modules:
       Paths_time_tracker

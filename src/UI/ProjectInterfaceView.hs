@@ -1,4 +1,4 @@
-module ProjectInterfaceView 
+module UI.ProjectInterfaceView 
      ( initProjectUiFieldBundle
      , setupProjectsView
      ) where

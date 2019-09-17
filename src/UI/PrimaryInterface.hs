@@ -1,4 +1,4 @@
-module PrimaryInterface
+module UI.PrimaryInterface
      ( buildMainContext
      , saveStateAndQuit
      ) where
@@ -13,8 +13,8 @@ import Control.Lens.Operators
 import Model.Types(ContextIO, Message, InterfaceMainContext(..))
 import Model.Project
 import Model.Issue
-import ProjectInterfaceView
-import IssueInterfaceView
+import UI.ProjectInterfaceView
+import UI.IssueInterfaceView
 import Model.TypesLenses
 import System.Directory
 import Data.Binary

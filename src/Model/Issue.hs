@@ -25,11 +25,11 @@ instance Binary Issue where
     put (_issueTimeRecorded issue)
     put (_issueTrackingStatus issue)
   get = do
-    _issueName <- get
-    _issuePriority <- get
-    _issueCreationDate <- get >>= parseTimeM True defaultTimeLocale "%Y-%-m-%-d"
+    _issueName               <- get
+    _issuePriority           <- get
+    _issueCreationDate       <- get >>= parseTimeM True defaultTimeLocale "%Y-%-m-%-d"
     _issueLastTrackTimestamp <- get
-    _issueTimeRecorded <- get
-    _issueTrackingStatus <- get
+    _issueTimeRecorded       <- get
+    _issueTrackingStatus     <- get
     return Issue {..}
     

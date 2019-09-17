@@ -1,18 +1,19 @@
-module Interface where
+module UI.Interface where
 
 import Graphics.UI.Gtk
 import Graphics.UI.Gtk.ModelView as View
 
 import Control.Monad.Reader
 
-import ProjectInterfaceController
-import IssueInterfaceController
-import PrimaryInterface
+import UI.Controllers.ProjectInterfaceController
+import UI.Controllers.IssueInterfaceController
+import UI.PrimaryInterface
 import Model.TypesLenses
-import Notifications
-import FileParsingController
-import Dialogs
-import TrackedTime
+import UI.Notifications
+import UI.Controllers.FileParsingController
+import UI.Dialogs
+import Model.TrackedTime
+import UI.TrackedTimeView
 
 import System.Directory
 
