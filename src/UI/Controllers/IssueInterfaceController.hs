@@ -16,8 +16,8 @@ import Control.Monad.Reader
 import UI.Notifications
 import Utils.TimeUtils
 
-displayIssues :: TreePath -> TreeViewColumn -> ContextIO ()
-displayIssues path row = do
+displayIssues :: TreePath  -> ContextIO ()
+displayIssues path  = do
   context <- ask
   projectEntity <- lift $ View.listStoreGetValue (context^.projectsStore) (head path)
   lift $ do
@@ -25,6 +25,14 @@ displayIssues path row = do
     writeIORef (context^.activeProject) (Just $ head path)
     writeIORef (context^.activeIssue) Nothing
     mapM_ (View.treeStoreInsert (context^.issuesStore) [] 0) (projectEntity^.projectIssues)
+    
+displayIssues2 :: TreeView -> ContextIO ()    
+displayIssues2 view = do
+  context <- ask
+  selection <- lift $ treeViewGetSelection view
+  selectedRow <- lift $ treeSelectionGetSelected selection
+  case selectedRow of
+    Just (TreeIter _ path _ _) -> displayIssues [fromIntegral path]      
     
 writeCurrentIssue :: TreePath -> TreeViewColumn -> ContextIO ()
 writeCurrentIssue path row = do

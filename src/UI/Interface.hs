@@ -48,7 +48,8 @@ initInterface = do
 
   on parseItem menuItemActivated $ (runReaderT $ openFileChooser fileChooserDialog) interfaceMainContext
   on insertButton buttonActivated $ runReaderT addProject interfaceMainContext
-  on projectsView rowActivated $ \path row -> (runReaderT $ displayIssues path row) interfaceMainContext
+--  on projectsView rowActivated $ \path _ -> (runReaderT $ displayIssues path) interfaceMainContext
+  on projectsView cursorChanged $ runReaderT (displayIssues2 projectsView) interfaceMainContext
   on issuesView rowActivated $ \path row -> (runReaderT $ writeCurrentIssue path row) interfaceMainContext
   on addIssueButton buttonActivated $ (runReaderT $ addIssue addIssueDialog) interfaceMainContext
   on removeButton buttonActivated $ runReaderT removeProject interfaceMainContext

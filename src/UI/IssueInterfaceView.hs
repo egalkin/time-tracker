@@ -22,6 +22,7 @@ setupIssuesView view issuesStore sortedIssueStore = do
 
   mapSortFunctionsToIds issuesStore sortedIssueStore 1 (^.issueName)
   mapSortFunctionsToIds issuesStore sortedIssueStore 2 (^.issuePriority)
+  mapSortFunctionsToIds issuesStore sortedIssueStore 3 (^.issueCreationDate)
   
   nameCol      <- View.treeViewColumnNew
   priorityCol  <- View.treeViewColumnNew
@@ -56,14 +57,27 @@ setupIssuesView view issuesStore sortedIssueStore = do
 
   View.treeViewColumnSetSortColumnId nameCol 1
   View.treeViewColumnSetSortColumnId priorityCol 2
+  View.treeViewColumnSetSortColumnId createdAtCol 3
 
-
+mapModelsFields :: TreeViewColumn
+                  -> CellRendererText
+                  -> TreeStore Issue
+                  -> TypedTreeModelSort Issue
+                  -> (Issue -> String)
+                  -> IO ()
 mapModelsFields col render model sortedModel displayFunc =
   View.cellLayoutSetAttributeFunc col render sortedModel $ \iter -> do
        cIter <- View.treeModelSortConvertIterToChildIter sortedModel iter
        issue <- View.treeModelGetRow model cIter
        set render [View.cellText := displayFunc issue]
-       
+
+
+mapSortFunctionsToIds :: Ord a
+                        => TreeStore Issue
+                        -> TypedTreeModelSort Issue
+                        -> Int
+                        -> (Issue -> a)
+                        -> IO()
 mapSortFunctionsToIds issuesStore sortedIssueStore funcId compareField = 
   View.treeSortableSetSortFunc sortedIssueStore funcId $ \iter1 iter2 -> do
       issue1 <- View.customStoreGetRow issuesStore iter1
