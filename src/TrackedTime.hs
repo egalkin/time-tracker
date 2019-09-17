@@ -5,12 +5,15 @@ module TrackedTime where
 import Graphics.UI.Gtk
 import Graphics.UI.Gtk.ModelView as View
 
-import Types(Issue, ContextIO)
-import TypesLenses
+import Model.Types(ContextIO)
+import Model.Issue
+import Model.Project
+import Model.TypesLenses
 import TimeUtils
 import Notifications
 
 import Data.Semigroup
+import Data.List (foldl')
 import Control.Lens
 import Control.Lens.Operators
 import Control.Monad.Reader
@@ -34,22 +37,34 @@ trackedTimeToInt time = _hours time * 3600 + _minutes time * 60
 
 makeLenses ''TrackedTime
 
-convertSecondsToTrackedTime :: Int -> TrackedTime
+convertSecondsToTrackedTime :: Int -> IO TrackedTime
 convertSecondsToTrackedTime seconds = do
   let hours = seconds `div` secondsInHour
-  TrackedTime { _hours = hours, _minutes = (seconds - hours * secondsInHour) `div` 60}
+  return $ TrackedTime { _hours = hours, _minutes = (seconds - hours * secondsInHour) `div` 60}
 
-
-countIssueTrackedTime :: Issue -> IO TrackedTime
-countIssueTrackedTime issue
-  | not (issue^.issueTrackingStatus) = return $ convertSecondsToTrackedTime $ issue^.issueTimeRecorded
+countIssueTrackedSeconds :: Issue -> IO Int
+countIssueTrackedSeconds issue
+  | not (issue^.issueTrackingStatus) = return $ issue^.issueTimeRecorded
   | issue^.issueTrackingStatus       = do
       currentTimestamp <- getSystemSeconds
-      return $ convertSecondsToTrackedTime (issue^.issueTimeRecorded + (currentTimestamp - issue^.issueLastTrackTimestamp))
+      return $ issue^.issueTimeRecorded + (currentTimestamp - issue^.issueLastTrackTimestamp)
+
+countIssueTrackedTime :: Issue -> IO TrackedTime
+countIssueTrackedTime issue = countIssueTrackedSeconds issue >>= convertSecondsToTrackedTime
+
+countProjectTrackedTime :: Project -> IO TrackedTime
+countProjectTrackedTime project =
+  foldl' ioIntPlus (pure 0) (map countIssueTrackedSeconds (project^.projectIssues)) >>= convertSecondsToTrackedTime
+    where
+      ioIntPlus :: IO Int -> IO Int -> IO Int
+      ioIntPlus accum ioInt = do
+        s1 <- accum
+        s2 <- ioInt
+        return (s1 + s2)
 
 
-showTrackedTime  :: Dialog -> ContextIO ()
-showTrackedTime dialog = do
+showIssueTrackedTime  :: Dialog -> ContextIO ()
+showIssueTrackedTime dialog = do
   context <- ask
   activeIssue <- lift $ readIORef (context^.activeIssue)
   case activeIssue of
@@ -63,3 +78,19 @@ showTrackedTime dialog = do
                       widgetHide dialog
                       statusbarPop (context^.trackedTimeStatusbar) contextId
     Nothing      -> showNoIssueChosen
+
+showProjectTrackedTime :: Dialog -> ContextIO ()
+showProjectTrackedTime dialog = do
+  context <- ask
+  activeProject <- lift $ readIORef (context^.activeProject)
+  case activeProject of
+    Just projectId -> lift $ do
+                        project <- View.listStoreGetValue (context^.projectsStore) projectId
+                        trackedTime <- countProjectTrackedTime project
+                        contextId <- statusbarGetContextId (context^.notificationStatusbar) ""
+                        statusbarPush (context^.trackedTimeStatusbar) contextId ("Project time tracked: " ++ show trackedTime)
+                        widgetShow dialog
+                        dialogRun dialog
+                        widgetHide dialog
+                        statusbarPop (context^.trackedTimeStatusbar) contextId
+    Nothing        -> showNoProjectChosen

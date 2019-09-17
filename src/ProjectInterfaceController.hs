@@ -8,8 +8,9 @@ import Control.Monad.Reader
 import Control.Lens.Operators
 import Data.IORef
 import TimeUtils
-import Types(ContextIO, Project(..))
-import TypesLenses
+import Model.Types(ContextIO)
+import Model.Project
+import Model.TypesLenses
 import Notifications
 
 clearProjects :: ContextIO ()

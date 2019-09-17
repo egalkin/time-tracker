@@ -22,7 +22,8 @@ import Data.Time.Calendar
 import Control.Applicative
 import Control.Monad (void)
 
-import Types
+import Model.Issue
+import TrackedTime
 
 import Data.Time.Clock.System
 

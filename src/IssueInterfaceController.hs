@@ -3,8 +3,10 @@ module IssueInterfaceController where
 import Graphics.UI.Gtk
 import Graphics.UI.Gtk.ModelView as View
 
-import Types(ContextIO, Issue(..), Project)
-import TypesLenses
+import Model.Types(ContextIO)
+import Model.Issue
+import Model.Project
+import Model.TypesLenses
 import Control.Lens.Operators
 import PrimaryInterface
 

@@ -1,43 +1,29 @@
-{-# LANGUAGE TemplateHaskell #-}
-
-module Types where
+module Model.Types where
 
 import Graphics.UI.Gtk
 
 import Data.IORef
+import Data.Binary
 
 import Control.Monad.Reader
 
 import Data.Time.Calendar
 
-data Project = Project {
-    _projectName         :: String
-  , _projectCreationDate :: Day
-  , _projectTimeRecorded :: Int
-  , _projectIssues       :: [Issue]
-} deriving (Show)
+import Model.Project
+import Model.Issue
+
+type ContextIO a = ReaderT InterfaceMainContext IO a
+type Message = String
 
 data ProjectUiFieldsBundle = ProjectUiFieldsBundle {
     _projectNameField :: Entry
 }
-
-data Issue = Issue {
-    _issueName               :: String
-  , _issuePriority           :: Int
-  , _issueCreationDate       :: Day
-  , _issueLastTrackTimestamp :: Int
-  , _issueTimeRecorded       :: Int
-  , _issueTrackingStatus     :: Bool
-} deriving (Show)
 
 data IssueUiFieldsBundle = IssueUiFieldsBundle {
     _issueNameField           :: Entry
   , _issuePriorityField       :: SpinButton
   , _issueTrackingStatusField :: CheckButton
 }
-
-type ContextIO a = ReaderT InterfaceMainContext IO a
-type Message = String
 
 data InterfaceMainContext = InterfaceMainContext {
   _projectsStore         :: ListStore Project,

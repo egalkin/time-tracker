@@ -6,8 +6,9 @@ module IssueInterfaceView
 import Graphics.UI.Gtk
 import Graphics.UI.Gtk.ModelView as View
 
-import Types(Issue, IssueUiFieldsBundle(..))
-import TypesLenses
+import Model.Types(IssueUiFieldsBundle(..))
+import Model.Issue
+import Model.TypesLenses
 import Control.Lens.Operators
 
 setupIssuesView :: TreeViewClass view

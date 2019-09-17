@@ -1,9 +1,11 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module TypesLenses where
+module Model.TypesLenses where
 
 import Control.Lens
-import Types
+import Model.Types
+import Model.Project
+import Model.Issue
 
 makeLenses ''Project
 makeLenses ''ProjectUiFieldsBundle

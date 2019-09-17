@@ -6,8 +6,8 @@ module Notifications
 import Graphics.UI.Gtk
 import Graphics.UI.Gtk.ModelView as View
 
-import Types(Message, ContextIO)
-import TypesLenses
+import Model.Types(Message, ContextIO)
+import Model.TypesLenses
 import Control.Lens.Operators
 
 import Control.Monad.Reader

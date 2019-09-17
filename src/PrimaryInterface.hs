@@ -1,5 +1,6 @@
 module PrimaryInterface
      ( buildMainContext
+     , saveStateAndQuit
      ) where
 
 import Graphics.UI.Gtk
@@ -9,10 +10,14 @@ import Data.IORef
 
 import Control.Monad.Reader
 import Control.Lens.Operators
-import Types(ContextIO, Message, InterfaceMainContext(..), Project, Issue)
+import Model.Types(ContextIO, Message, InterfaceMainContext(..))
+import Model.Project
+import Model.Issue
 import ProjectInterfaceView
 import IssueInterfaceView
-import TypesLenses
+import Model.TypesLenses
+import System.Directory
+import Data.Binary
 
 buildMainContext :: Builder
                  -> TreeView
@@ -46,7 +51,7 @@ initStores :: TreeViewClass view
              -> view
              -> IO (View.ListStore Project, View.TreeStore Issue)
 initStores projectsView issuesView = do
-  projectStore      <- projectsStoreImpl
+  projectStore      <- initProjectStore
   issuesStore       <- issuesStoreImpl
   sortedIssuesStore <- View.treeModelSortNewWithModel issuesStore
   View.treeViewSetModel projectsView projectStore
@@ -55,7 +60,22 @@ initStores projectsView issuesView = do
   setupIssuesView issuesView issuesStore sortedIssuesStore
   return (projectStore, issuesStore)  
 
+initProjectStore = do
+  previousStateFlag <- doesFileExist "projects.dat"
+  if previousStateFlag then do
+    projects <- decodeFile "projects.dat"
+    projectsStoreImpl projects
+  else 
+    projectsStoreImpl []
 
-projectsStoreImpl = View.listStoreNew []
+saveStateAndQuit :: ContextIO ()
+saveStateAndQuit = do
+  context <- ask
+  lift $ do
+    projects <- View.listStoreToList (context^.projectsStore)
+    encodeFile "projects.dat" projects
+    mainQuit
+
+projectsStoreImpl = View.listStoreNew
 
 issuesStoreImpl = View.treeStoreNew []

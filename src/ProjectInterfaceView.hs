@@ -6,8 +6,9 @@ module ProjectInterfaceView
 import Graphics.UI.Gtk
 import Graphics.UI.Gtk.ModelView as View
 
-import Types(Project, ProjectUiFieldsBundle(..))
-import TypesLenses
+import Model.Types(ProjectUiFieldsBundle(..))
+import Model.Project
+import Model.TypesLenses
 import Control.Lens.Operators
 
 setupProjectsView :: TreeViewClass view

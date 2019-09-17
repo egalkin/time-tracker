@@ -29,18 +29,21 @@ library
   exposed-modules:
       Lib
     , Interface
-    , Types
+    , Model.Types
     , IssueParser
     , TimeUtils
     , PrimaryInterface
     , ProjectInterfaceController
-    , TypesLenses
+    , Model.TypesLenses
     , IssueInterfaceController
     , IssueInterfaceView
     , ProjectInterfaceView
     , Notifications
     , Dialogs
     , TrackedTime
+    , FileParsingController
+    , Model.Issue
+    , Model.Project
 
   other-modules:
       Paths_time_tracker
@@ -58,7 +61,9 @@ library
     , megaparsec
     , text
     , transformers
-    , human-readable-duration
+    , binary
+    , system-fileio >= 0.1
+    , directory
   default-language: Haskell2010
 
 executable time-tracker-exe
