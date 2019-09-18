@@ -8,6 +8,7 @@ import qualified Graphics.UI.Gtk.ModelView as View
 
 import Model.Types(IssueUiFieldsBundle(..))
 import Model.Issue
+import Utils.TrackedTimeUtils(convertSecondsToTrackedTime)
 import Model.TypesLenses
 import Model.TrackedTime
 import Control.Lens.Operators

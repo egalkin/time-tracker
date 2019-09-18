@@ -1,11 +1,16 @@
 {-# LANGUAGE RecordWildCards #-}
 
-module Model.Issue where
+-- | Model to store issues data.
+
+module Model.Issue
+     ( Issue(..)
+     ) where
 
 import Data.Time.Calendar
 import Data.Time.Format
 import Data.Binary
 
+-- | This type stores data about issue.
 data Issue = Issue {
     _issueName               :: String
   , _issuePriority           :: Int
@@ -15,7 +20,7 @@ data Issue = Issue {
   , _issueTrackingStatus     :: Bool
 } deriving (Show)
 
-
+-- | This instance used to provide serialization opportunity.
 instance Binary Issue where
   put issue = do
     put (_issueName issue)

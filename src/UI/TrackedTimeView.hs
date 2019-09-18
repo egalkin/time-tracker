@@ -6,6 +6,7 @@ import qualified Graphics.UI.Gtk.ModelView as View
 import Model.Types(ContextIO, Message)
 import Model.TrackedTime
 import Model.TypesLenses
+import Utils.TrackedTimeUtils
 
 import Data.IORef
 

@@ -1,12 +1,16 @@
 {-# LANGUAGE RecordWildCards #-}
 
-module Model.Project where
+-- | Model to store projects data.
+module Model.Project 
+     ( Project(..)
+     ) where
 
 import Data.Binary
 import Data.Time.Calendar
 import Data.Time.Format
 import Model.Issue
 
+-- | This type stores data about project.
 data Project = Project {
     _projectName         :: String
   , _projectCreationDate :: Day
@@ -14,7 +18,7 @@ data Project = Project {
   , _projectIssues       :: [Issue]
 } deriving (Show)
 
-
+-- | This instance used to provide serialization opportunity.
 instance Binary Project where
   put project = do
     put (_projectName project)

@@ -14,6 +14,7 @@ import Control.Monad.Reader
 
 import UI.Notifications
 import Utils.TimeUtils
+import Utils.TrackedTimeUtils(countIssueTrackedSeconds)
 import Model.TrackedTime
 
 updateIssue :: Issue -> IO Issue
@@ -32,12 +33,12 @@ displayIssues2 threadType path = do
     let updatedProjectEntity = projectEntity & projectIssues .~ updatedIssues
     if threadType == TimeHelperThread then
       mapM_ (uncurry $ View.listStoreSetValue (context^.issuesStore)) (zip [0..] (updatedProjectEntity^.projectIssues))
-    else do 
+    else do
       View.listStoreClear (context^.issuesStore)
       mapM_ (View.listStoreAppend (context^.issuesStore)) (updatedProjectEntity^.projectIssues)
     View.listStoreSetValue (context^.projectsStore) (head path) updatedProjectEntity
 
-displayIssues :: ThreadType -> ContextIO ()    
+displayIssues :: ThreadType -> ContextIO ()
 displayIssues threadType = do
   projectsView <- asks (^.projectsView)
   selection <- lift $ treeViewGetSelection projectsView
@@ -45,8 +46,8 @@ displayIssues threadType = do
   case selectedRow of
     Just iter -> displayIssues2 threadType [listStoreIterToIndex iter]
     Nothing   -> return ()
-    
-    
+
+
 addIssueToProject :: Dialog -> Int -> ContextIO ()
 addIssueToProject dialog project = do
   context       <- ask
@@ -70,7 +71,7 @@ addIssue dialog  = do
 addIssueHelper :: Project -> Int -> Either String Issue -> ContextIO ()
 addIssueHelper activeRow project issue = do
   context <- ask
-  case issue of 
+  case issue of
     Right iss -> lift $ do
                           let newActiveRow = activeRow & (projectIssues %~ (iss :))
                           View.listStoreClear (context^.issuesStore)
@@ -88,7 +89,7 @@ buildIssue = do
     creationDate   <- getCurrentDate
     timestamp      <- getSystemSeconds
     trackingStatus <- toggleButtonGetActive $ context^.issueUiFieldsBundle.issueTrackingStatusField
-    
+
     case name of
       []  -> return $ Left "Issue's name can't be empty"
       str -> return $ Right Issue {
