@@ -1,7 +1,7 @@
 module UI.Interface where
 
 import Graphics.UI.Gtk
-import Graphics.UI.Gtk.ModelView as View
+import qualified Graphics.UI.Gtk.ModelView as View
 
 import Control.Monad.Reader
 
@@ -50,7 +50,7 @@ initInterface = do
   on insertButton buttonActivated $ runReaderT addProject interfaceMainContext
 --  on projectsView rowActivated $ \path _ -> (runReaderT $ displayIssues path) interfaceMainContext
   on projectsView cursorChanged $ runReaderT (displayIssues2 projectsView) interfaceMainContext
-  on issuesView rowActivated $ \path row -> (runReaderT $ writeCurrentIssue path row) interfaceMainContext
+  on issuesView cursorChanged $ (runReaderT $ writeCurrentIssue issuesView) interfaceMainContext
   on addIssueButton buttonActivated $ (runReaderT $ addIssue addIssueDialog) interfaceMainContext
   on removeButton buttonActivated $ runReaderT removeProject interfaceMainContext
   on clearButton buttonActivated $ runReaderT clearProjects interfaceMainContext

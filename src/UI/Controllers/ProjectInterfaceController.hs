@@ -1,7 +1,7 @@
 module UI.Controllers.ProjectInterfaceController where
 
 import Graphics.UI.Gtk
-import Graphics.UI.Gtk.ModelView as View
+import qualified Graphics.UI.Gtk.ModelView as View
 
 import UI.PrimaryInterface
 import Control.Monad.Reader

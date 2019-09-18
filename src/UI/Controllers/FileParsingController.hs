@@ -4,7 +4,7 @@ module UI.Controllers.FileParsingController
      )where
 
 import Graphics.UI.Gtk
-import Graphics.UI.Gtk.ModelView as View
+import qualified Graphics.UI.Gtk.ModelView as View
 
 import Data.IORef
 import Data.Either

@@ -4,7 +4,7 @@ module UI.Notifications
      )where
 
 import Graphics.UI.Gtk
-import Graphics.UI.Gtk.ModelView as View
+import qualified Graphics.UI.Gtk.ModelView as View
 
 import Model.Types(Message, ContextIO)
 import Model.TypesLenses

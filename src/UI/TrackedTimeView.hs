@@ -1,7 +1,7 @@
 module UI.TrackedTimeView where
 
 import Graphics.UI.Gtk
-import Graphics.UI.Gtk.ModelView as View
+import qualified Graphics.UI.Gtk.ModelView as View
 
 import Model.Types(ContextIO, Message)
 import Model.TrackedTime

@@ -1,7 +1,7 @@
 module UI.Controllers.IssueInterfaceController where
 
 import Graphics.UI.Gtk
-import Graphics.UI.Gtk.ModelView as View
+import qualified Graphics.UI.Gtk.ModelView as View
 
 import Model.Types(ContextIO)
 import Model.Issue
@@ -16,7 +16,7 @@ import Control.Monad.Reader
 import UI.Notifications
 import Utils.TimeUtils
 
-displayIssues :: TreePath  -> ContextIO ()
+displayIssues :: TreePath -> ContextIO ()
 displayIssues path  = do
   context <- ask
   projectEntity <- lift $ View.listStoreGetValue (context^.projectsStore) (head path)
@@ -32,13 +32,22 @@ displayIssues2 view = do
   selection <- lift $ treeViewGetSelection view
   selectedRow <- lift $ treeSelectionGetSelected selection
   case selectedRow of
-    Just (TreeIter _ path _ _) -> displayIssues [fromIntegral path]
-    Nothing                    -> return ()
+    Just iter -> displayIssues [listStoreIterToIndex iter]
+    Nothing   -> return ()
     
-writeCurrentIssue :: TreePath -> TreeViewColumn -> ContextIO ()
-writeCurrentIssue path row = do
+writeCurrentIssue :: TreeView -> ContextIO ()
+writeCurrentIssue view = do
   context <- ask
-  lift $ writeIORef (context^.activeIssue) (Just $ head path)    
+  selection <- lift $ treeViewGetSelection view
+  selectedRow <- lift $ treeSelectionGetSelected selection
+  case selectedRow of
+    Just iter -> do
+                   path <- lift $ View.treeModelSortConvertIterToChildIter (context^.sortedIssuesStore) iter
+                   lift $ writeIORef (context^.activeIssue) (Just $ listStoreIterToIndex path)
+    Nothing   -> return ()
+
+
+
 
 addIssueToProject :: Dialog -> Int -> ContextIO ()
 addIssueToProject dialog project = do

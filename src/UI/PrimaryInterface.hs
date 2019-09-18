@@ -4,7 +4,7 @@ module UI.PrimaryInterface
      ) where
 
 import Graphics.UI.Gtk
-import Graphics.UI.Gtk.ModelView as View
+import qualified Graphics.UI.Gtk.ModelView as View
 
 import Data.IORef
 
@@ -24,7 +24,7 @@ buildMainContext :: Builder
                  -> TreeView
                  -> IO InterfaceMainContext
 buildMainContext gui projectsView issuesView = do
-  (projectsStore, issuesStore) <- initStores projectsView issuesView
+  (projectsStore, issuesStore, sortedIssuesStore) <- initStores projectsView issuesView
   projectUiFieldsBundle        <- initProjectUiFieldBundle gui
   issueUiFieldsBundle          <- initIssueUiFieldBundle gui
   activeProject                <- newIORef Nothing
@@ -42,14 +42,15 @@ buildMainContext gui projectsView issuesView = do
     _activeIssue           = activeIssue,
     _trackedTimeStatusbar  = trackedTimeStatusbar,
     _notificationDialog    = notificationDialog,
-    _notificationStatusbar = notificationStatusbar
+    _notificationStatusbar = notificationStatusbar,
+    _sortedIssuesStore     = sortedIssuesStore
   }
   
   
 initStores :: TreeViewClass view
              => view
              -> view
-             -> IO (View.ListStore Project, View.ListStore Issue)
+             -> IO (View.ListStore Project, View.ListStore Issue, View.TypedTreeModelSort Issue)
 initStores projectsView issuesView = do
   projectStore      <- initProjectStore
   issuesStore       <- storeImpl []
@@ -58,7 +59,7 @@ initStores projectsView issuesView = do
   View.treeViewSetModel issuesView sortedIssuesStore
   setupProjectsView projectsView projectStore
   setupIssuesView issuesView issuesStore sortedIssuesStore
-  return (projectStore, issuesStore)
+  return (projectStore, issuesStore, sortedIssuesStore)
 
 initProjectStore = do
   previousStateFlag <- doesFileExist "projects.dat"

@@ -34,7 +34,8 @@ data InterfaceMainContext = InterfaceMainContext {
   _activeIssue           :: IORef (Maybe Int),
   _trackedTimeStatusbar  :: Statusbar,
   _notificationDialog    :: Dialog,
-  _notificationStatusbar :: Statusbar
+  _notificationStatusbar :: Statusbar,
+  _sortedIssuesStore     :: TypedTreeModelSort Issue
 }
 
 
