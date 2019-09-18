@@ -66,9 +66,7 @@ handleParsedData issues project = do
   activeRow     <- lift $ View.listStoreGetValue (context^.projectsStore) project
   let (_, correctlyParsedIssues) = partitionEithers issues
   currentTime <- lift getSystemSeconds
-  lift $ putStrLn $ show correctlyParsedIssues
   let newActiveRow = activeRow & (projectIssues %~ (++ (map (issueLastTrackTimestamp.~currentTime) correctlyParsedIssues)))
-  lift $ putStrLn $ show $ newActiveRow^.projectIssues
   lift $ do
     View.listStoreClear (context^.issuesStore)
     mapM_ (View.listStoreAppend (context^.issuesStore)) (newActiveRow^.projectIssues)

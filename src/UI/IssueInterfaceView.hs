@@ -9,6 +9,7 @@ import qualified Graphics.UI.Gtk.ModelView as View
 import Model.Types(IssueUiFieldsBundle(..))
 import Model.Issue
 import Model.TypesLenses
+import Model.TrackedTime
 import Control.Lens.Operators
 
 setupIssuesView :: TreeViewClass view
@@ -47,7 +48,7 @@ setupIssuesView view issuesStore sortedIssueStore = do
   mapModelsFields nameCol renderNameCol issuesStore sortedIssueStore (^.issueName)
   mapModelsFields priorityCol renderPriorityCol issuesStore sortedIssueStore (show . (^.issuePriority))
   mapModelsFields createdAtCol renderCreatedAtCol issuesStore sortedIssueStore (show . (^.issueCreationDate) )
-  mapModelsFields recordedCol renderRecordedCol issuesStore sortedIssueStore (show . (^.issueTimeRecorded) )
+  mapModelsFields recordedCol renderRecordedCol issuesStore sortedIssueStore (show . convertSecondsToTrackedTime. (^.issueTimeRecorded) )
 
 
   View.treeViewAppendColumn view nameCol

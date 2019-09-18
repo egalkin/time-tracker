@@ -20,30 +20,33 @@ clearProjects = do
     View.listStoreClear (context^.issuesStore)
     View.listStoreClear (context^.projectsStore)
     writeIORef (context^.activeProject) Nothing
-    writeIORef (context^.activeIssue) Nothing
 
 
 addProject :: ContextIO ()
 addProject = do
   context   <- ask
   project   <- buildProject
-  lift $ do
-    View.listStoreAppend (context^.projectsStore) project
-    return ()
+  case project of 
+    Right pr -> lift $ do
+                         View.listStoreAppend (context^.projectsStore) pr
+                         return ()
+    Left err -> showCustomNotification err              
 
-buildProject :: ContextIO Project
+buildProject :: ContextIO (Either String Project)
 buildProject = do
   context      <- ask
   lift $ do
     name         <- entryGetText (context^.projectUiFieldsBundle.projectNameField)
     creationDate <- getCurrentDate
+    case name of
+      []   -> return $ Left "Project name can't be empty"
+      str  -> return $ Right Project {
+                           _projectName         = name,
+                           _projectCreationDate = creationDate,
+                           _projectTimeRecorded = 0,
+                           _projectIssues       = []
+                           }
 
-    return Project {
-      _projectName         = name,
-      _projectCreationDate = creationDate,
-      _projectTimeRecorded = 0,
-      _projectIssues       = []
-    }
 
 
 removeProject :: ContextIO ()

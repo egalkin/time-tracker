@@ -64,6 +64,7 @@ library
     , binary
     , system-fileio >= 0.1
     , directory
+    , random
   default-language: Haskell2010
 
 executable time-tracker-exe
@@ -79,7 +80,7 @@ executable time-tracker-exe
     , gtk3
     , containers
   default-language: Haskell2010
-K
+
 test-suite time-tracker-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs

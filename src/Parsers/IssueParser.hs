@@ -70,12 +70,14 @@ timeTracked :: Parser TrackedTime
 timeTracked = do
   _hours   <- fromIntegral <$> L.integer
   char ':'
-  _minutes <- mins
+  _minutes <- minsOrSecs
+  char ':'
+  _seconds <- minsOrSecs
 
   TrackedTime {..} <$ sc
 
-mins :: Parser Int
-mins = try withLeadingZero <|> withoutLeadingZero
+minsOrSecs :: Parser Int
+minsOrSecs = try withLeadingZero <|> withoutLeadingZero
   where
     withLeadingZero    = read . (: []) <$> (char '0' *> digitChar)
     withoutLeadingZero = do 

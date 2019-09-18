@@ -15,6 +15,7 @@ import Model.Project
 import Model.Issue
 import UI.ProjectInterfaceView
 import UI.IssueInterfaceView
+import UI.Controllers.IssueInterfaceController
 import Model.TypesLenses
 import System.Directory
 import Data.Binary
@@ -25,21 +26,21 @@ buildMainContext :: Builder
                  -> IO InterfaceMainContext
 buildMainContext gui projectsView issuesView = do
   (projectsStore, issuesStore, sortedIssuesStore) <- initStores projectsView issuesView
-  projectUiFieldsBundle        <- initProjectUiFieldBundle gui
-  issueUiFieldsBundle          <- initIssueUiFieldBundle gui
-  activeProject                <- newIORef Nothing
-  activeIssue                  <- newIORef Nothing
-  trackedTimeStatusbar         <- builderGetObject gui castToStatusbar "issueTimeTrackedStatusbar"
-  notificationDialog           <- builderGetObject gui castToDialog "notificationDialog"
-  notificationStatusbar        <- builderGetObject gui castToStatusbar "notificationStatusbar"
+  projectUiFieldsBundle                           <- initProjectUiFieldBundle gui
+  issueUiFieldsBundle                             <- initIssueUiFieldBundle gui
+  activeProject                                   <- newIORef Nothing
+  trackedTimeStatusbar                            <- builderGetObject gui castToStatusbar "issueTimeTrackedStatusbar"
+  notificationDialog                              <- builderGetObject gui castToDialog "notificationDialog"
+  notificationStatusbar                           <- builderGetObject gui castToStatusbar "notificationStatusbar"
 
   return InterfaceMainContext {
     _projectsStore         = projectsStore,
+    _projectsView          = projectsView,
     _projectUiFieldsBundle = projectUiFieldsBundle,
     _issuesStore           = issuesStore,
+    _issuesView            = issuesView,
     _issueUiFieldsBundle   = issueUiFieldsBundle,
     _activeProject         = activeProject,
-    _activeIssue           = activeIssue,
     _trackedTimeStatusbar  = trackedTimeStatusbar,
     _notificationDialog    = notificationDialog,
     _notificationStatusbar = notificationStatusbar,
@@ -65,9 +66,16 @@ initProjectStore = do
   previousStateFlag <- doesFileExist "projects.dat"
   if previousStateFlag then do
     projects <- decodeFile "projects.dat"
-    storeImpl projects
+    updatedProjects <- mapM updateProject projects
+    storeImpl updatedProjects
   else 
     storeImpl []
+
+updateProject :: Project -> IO Project 
+updateProject project = do
+  updatedIssues <- mapM updateIssue (project^.projectIssues) 
+  return $ project & projectIssues .~ updatedIssues
+  
 
 saveStateAndQuit :: ContextIO ()
 saveStateAndQuit = do

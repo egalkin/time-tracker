@@ -1,6 +1,7 @@
 module UI.Notifications
      ( showNoIssueChosen
-     , showNoProjectChosen     
+     , showNoProjectChosen 
+     , showCustomNotification    
      )where
 
 import Graphics.UI.Gtk
@@ -29,3 +30,6 @@ showNoIssueChosen = showNotification "Issue not chosen!"
 
 showNoProjectChosen :: ContextIO ()
 showNoProjectChosen = showNotification "Project not chosen!"
+
+showCustomNotification :: Message -> ContextIO ()
+showCustomNotification = showNotification

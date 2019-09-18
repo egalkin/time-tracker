@@ -19,23 +19,11 @@ showTrackedTime dialog message trackedTime = do
   context <- ask
   lift $ do
     contextId <- statusbarGetContextId (context^.notificationStatusbar) ""
-    statusbarPush (context^.trackedTimeStatusbar) contextId ("Project time tracked: " ++ show trackedTime)
+    statusbarPush (context^.trackedTimeStatusbar) contextId (message ++ show trackedTime)
     widgetShow dialog
     dialogRun dialog
     widgetHide dialog
     statusbarPop (context^.trackedTimeStatusbar) contextId
-  
-  
-showIssueTrackedTime  :: Dialog -> ContextIO ()
-showIssueTrackedTime dialog = do
-  context <- ask
-  activeIssue <- lift $ readIORef (context^.activeIssue)
-  case activeIssue of
-    Just issueId -> do
-                      issue <- lift $ View.listStoreGetValue (context^.issuesStore) issueId
-                      trackedTime <- lift $ countIssueTrackedTime issue
-                      showTrackedTime dialog "Issue time tracked: " trackedTime
-    Nothing      -> showNoIssueChosen
 
 showProjectTrackedTime :: Dialog -> ContextIO ()
 showProjectTrackedTime dialog = do
