@@ -34,14 +34,14 @@ buildMainContext gui projectsView issuesView = do
   notificationStatusbar        <- builderGetObject gui castToStatusbar "notificationStatusbar"
 
   return InterfaceMainContext {
-    _projectsStore = projectsStore,
+    _projectsStore         = projectsStore,
     _projectUiFieldsBundle = projectUiFieldsBundle,
-    _issuesStore = issuesStore,
-    _issueUiFieldsBundle = issueUiFieldsBundle,
-    _activeProject = activeProject,
-    _activeIssue = activeIssue,
-    _trackedTimeStatusbar = trackedTimeStatusbar,
-    _notificationDialog   = notificationDialog,
+    _issuesStore           = issuesStore,
+    _issueUiFieldsBundle   = issueUiFieldsBundle,
+    _activeProject         = activeProject,
+    _activeIssue           = activeIssue,
+    _trackedTimeStatusbar  = trackedTimeStatusbar,
+    _notificationDialog    = notificationDialog,
     _notificationStatusbar = notificationStatusbar
   }
   
@@ -52,7 +52,7 @@ initStores :: TreeViewClass view
              -> IO (View.ListStore Project, View.ListStore Issue)
 initStores projectsView issuesView = do
   projectStore      <- initProjectStore
-  issuesStore       <- issuesStoreImpl
+  issuesStore       <- storeImpl []
   sortedIssuesStore <- View.treeModelSortNewWithModel issuesStore
   View.treeViewSetModel projectsView projectStore
   View.treeViewSetModel issuesView sortedIssuesStore
@@ -64,9 +64,9 @@ initProjectStore = do
   previousStateFlag <- doesFileExist "projects.dat"
   if previousStateFlag then do
     projects <- decodeFile "projects.dat"
-    projectsStoreImpl projects
+    storeImpl projects
   else 
-    projectsStoreImpl []
+    storeImpl []
 
 saveStateAndQuit :: ContextIO ()
 saveStateAndQuit = do
@@ -76,6 +76,4 @@ saveStateAndQuit = do
     encodeFile "projects.dat" projects
     mainQuit
 
-projectsStoreImpl = View.listStoreNew
-
-issuesStoreImpl = View.listStoreNew []
+storeImpl = View.listStoreNew
