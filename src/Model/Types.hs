@@ -28,7 +28,7 @@ data IssueUiFieldsBundle = IssueUiFieldsBundle {
 data InterfaceMainContext = InterfaceMainContext {
   _projectsStore         :: ListStore Project,
   _projectUiFieldsBundle :: ProjectUiFieldsBundle,
-  _issuesStore           :: TreeStore Issue,
+  _issuesStore           :: ListStore Issue,
   _issueUiFieldsBundle   :: IssueUiFieldsBundle,
   _activeProject         :: IORef (Maybe Int),
   _activeIssue           :: IORef (Maybe Int),

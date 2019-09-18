@@ -13,7 +13,7 @@ import Control.Lens.Operators
 
 setupIssuesView :: TreeViewClass view
                   => view
-                  -> TreeStore Issue
+                  -> ListStore Issue
                   -> TypedTreeModelSort Issue
                   -> IO ()
 setupIssuesView view issuesStore sortedIssueStore = do
@@ -61,7 +61,7 @@ setupIssuesView view issuesStore sortedIssueStore = do
 
 mapModelsFields :: TreeViewColumn
                   -> CellRendererText
-                  -> TreeStore Issue
+                  -> ListStore Issue
                   -> TypedTreeModelSort Issue
                   -> (Issue -> String)
                   -> IO ()
@@ -73,7 +73,7 @@ mapModelsFields col render model sortedModel displayFunc =
 
 
 mapSortFunctionsToIds :: Ord a
-                        => TreeStore Issue
+                        => ListStore Issue
                         -> TypedTreeModelSort Issue
                         -> Int
                         -> (Issue -> a)

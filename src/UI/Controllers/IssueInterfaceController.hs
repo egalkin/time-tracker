@@ -21,10 +21,10 @@ displayIssues path  = do
   context <- ask
   projectEntity <- lift $ View.listStoreGetValue (context^.projectsStore) (head path)
   lift $ do
-    View.treeStoreClear (context^.issuesStore)
+    View.listStoreClear (context^.issuesStore)
     writeIORef (context^.activeProject) (Just $ head path)
     writeIORef (context^.activeIssue) Nothing
-    mapM_ (View.treeStoreInsert (context^.issuesStore) [] 0) (projectEntity^.projectIssues)
+    mapM_ (View.listStoreAppend (context^.issuesStore)) (projectEntity^.projectIssues)
     
 displayIssues2 :: TreeView -> ContextIO ()    
 displayIssues2 view = do
@@ -32,11 +32,12 @@ displayIssues2 view = do
   selection <- lift $ treeViewGetSelection view
   selectedRow <- lift $ treeSelectionGetSelected selection
   case selectedRow of
-    Just (TreeIter _ path _ _) -> displayIssues [fromIntegral path]      
+    Just (TreeIter _ path _ _) -> displayIssues [fromIntegral path]
+    Nothing                    -> return ()
     
 writeCurrentIssue :: TreePath -> TreeViewColumn -> ContextIO ()
 writeCurrentIssue path row = do
-  context <- ask 
+  context <- ask
   lift $ writeIORef (context^.activeIssue) (Just $ head path)    
 
 addIssueToProject :: Dialog -> Int -> ContextIO ()
@@ -63,8 +64,8 @@ addIssueHelper activeRow project issue = do
   context <- ask
   let newActiveRow = activeRow & (projectIssues %~ (issue :))
   lift $ do
-   View.treeStoreClear (context^.issuesStore)
-   mapM_ (View.treeStoreInsert (context^.issuesStore) [] 0) (newActiveRow^.projectIssues)
+   View.listStoreClear (context^.issuesStore)
+   mapM_ (View.listStoreAppend (context^.issuesStore)) (newActiveRow^.projectIssues)
    View.listStoreSetValue (context^.projectsStore) project newActiveRow
 
 buildIssue :: ContextIO Issue

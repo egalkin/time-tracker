@@ -17,7 +17,7 @@ clearProjects :: ContextIO ()
 clearProjects = do
   context <- ask
   lift $ do
-    View.treeStoreClear (context^.issuesStore)
+    View.listStoreClear (context^.issuesStore)
     View.listStoreClear (context^.projectsStore)
     writeIORef (context^.activeProject) Nothing
     writeIORef (context^.activeIssue) Nothing
@@ -53,5 +53,5 @@ removeProject = do
   case currentActiveProject of
     Just project -> lift $ do
                       View.listStoreRemove (context^.projectsStore) project
-                      View.treeStoreClear (context^.issuesStore)
+                      View.listStoreClear (context^.issuesStore)
     Nothing      -> showNoProjectChosen

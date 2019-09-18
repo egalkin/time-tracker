@@ -70,7 +70,7 @@ handleParsedData issues project = do
   let newActiveRow = activeRow & (projectIssues %~ (++ (map (issueLastTrackTimestamp.~currentTime) correctlyParsedIssues)))
   lift $ putStrLn $ show $ newActiveRow^.projectIssues
   lift $ do
-    View.treeStoreClear (context^.issuesStore)
-    mapM_ (View.treeStoreInsert (context^.issuesStore) [] 0) (newActiveRow^.projectIssues)
+    View.listStoreClear (context^.issuesStore)
+    mapM_ (View.listStoreAppend (context^.issuesStore)) (newActiveRow^.projectIssues)
     View.listStoreSetValue (context^.projectsStore) project newActiveRow
 

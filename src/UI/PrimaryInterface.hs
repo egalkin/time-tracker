@@ -49,7 +49,7 @@ buildMainContext gui projectsView issuesView = do
 initStores :: TreeViewClass view
              => view
              -> view
-             -> IO (View.ListStore Project, View.TreeStore Issue)
+             -> IO (View.ListStore Project, View.ListStore Issue)
 initStores projectsView issuesView = do
   projectStore      <- initProjectStore
   issuesStore       <- issuesStoreImpl
@@ -58,7 +58,7 @@ initStores projectsView issuesView = do
   View.treeViewSetModel issuesView sortedIssuesStore
   setupProjectsView projectsView projectStore
   setupIssuesView issuesView issuesStore sortedIssuesStore
-  return (projectStore, issuesStore)  
+  return (projectStore, issuesStore)
 
 initProjectStore = do
   previousStateFlag <- doesFileExist "projects.dat"
@@ -78,4 +78,4 @@ saveStateAndQuit = do
 
 projectsStoreImpl = View.listStoreNew
 
-issuesStoreImpl = View.treeStoreNew []
+issuesStoreImpl = View.listStoreNew []

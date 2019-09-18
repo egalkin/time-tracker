@@ -20,7 +20,7 @@ showIssueTrackedTime dialog = do
   activeIssue <- lift $ readIORef (context^.activeIssue)
   case activeIssue of
     Just issueId -> lift $ do
-                      issue <- View.treeStoreGetValue (context^.issuesStore) [issueId]
+                      issue <- View.listStoreGetValue (context^.issuesStore) issueId
                       trackedTime <- countIssueTrackedTime issue
                       contextId <- statusbarGetContextId (context^.notificationStatusbar) ""
                       statusbarPush (context^.trackedTimeStatusbar) contextId ("Issue time tracked: " ++ show trackedTime)
