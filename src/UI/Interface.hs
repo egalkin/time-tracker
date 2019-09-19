@@ -18,7 +18,6 @@ import Model.Types(ThreadType(..))
 
 import System.Directory
 import Control.Concurrent
-import System.Random
 
 import Utils.TimeUtils
 
@@ -37,29 +36,45 @@ initInterface = do
   
   on win objectDestroy $ runReaderT saveStateAndQuit interfaceMainContext
 
-  addIssueDialog       <- initAddIssueDialog gui
-  trackedTimeDialog    <- initTrackedTimeDialog gui
-  fileChooserDialog    <- initFileChooserDialog win
+  (issueDialog, issueActionButton) <- initIssueDialog gui
+  trackedTimeDialog                <- initTrackedTimeDialog gui
+  fileChooserDialog                <- initFileChooserDialog win
 
-  insertButton   <- builderGetObject gui castToButton "insert"
-  addIssueButton <- builderGetObject gui castToButton "issueButton"
-  showIssueTrackedTimeButton <- builderGetObject gui castToButton "issueTrackedTimeButton"
+  insertButton                 <- builderGetObject gui castToButton "insert"
+  addIssueButton               <- builderGetObject gui castToButton "issueButton"
   showProjectTrackedTimeButton <- builderGetObject gui castToButton "projectTrackedTimeButton"
-  removeButton  <- builderGetObject gui castToButton "remove"
-  clearButton   <- builderGetObject gui castToButton "clear"
+  removeIssueButton            <- builderGetObject gui castToButton "removeIssueButton"
+  clearIssuesButton            <- builderGetObject gui castToButton "clearIssuesButton"
+  removeButton                 <- builderGetObject gui castToButton "remove"
+  clearButton                  <- builderGetObject gui castToButton "clear"
+
+
 
 
   parseItem     <- builderGetObject gui castToMenuItem "parseIssues"
 
-  on parseItem menuItemActivated $ (runReaderT $ openFileChooser fileChooserDialog) interfaceMainContext
-  on insertButton buttonActivated $ runReaderT addProject interfaceMainContext
---  on projectsView rowActivated $ \path _ -> (runReaderT $ displayIssues path) interfaceMainContext
-  on projectsView cursorChanged $ runReaderT (displayIssues GtkThread) interfaceMainContext
---  on issuesView rowActivated $ \path _ -> (runReaderT $ writeCurrentIssue path) interfaceMainContext
-  on addIssueButton buttonActivated $ (runReaderT $ addIssue addIssueDialog) interfaceMainContext
-  on removeButton buttonActivated $ runReaderT removeProject interfaceMainContext
-  on clearButton buttonActivated $ runReaderT clearProjects interfaceMainContext
-  on showProjectTrackedTimeButton buttonActivated $ (runReaderT $ showProjectTrackedTime trackedTimeDialog) interfaceMainContext
+  on parseItem menuItemActivated
+    $ (runReaderT $ openFileChooser fileChooserDialog) interfaceMainContext
+  on insertButton buttonActivated
+    $ runReaderT addProject interfaceMainContext
+  on projectsView cursorChanged
+    $ runReaderT (displayIssues GtkThread) interfaceMainContext
+  on issuesView cursorChanged
+    $ runReaderT writeActiveIssue interfaceMainContext
+  on removeIssueButton buttonActivated
+    $ runReaderT removeIssue interfaceMainContext
+  on clearIssuesButton buttonActivated
+    $ runReaderT clearIssues interfaceMainContext
+  on issuesView rowActivated
+    $ \path _ -> (runReaderT $ displayIssueInformation issueDialog issueActionButton path) interfaceMainContext
+  on addIssueButton buttonActivated
+    $ (runReaderT $ addIssue issueDialog issueActionButton) interfaceMainContext
+  on removeButton buttonActivated
+    $ runReaderT removeProject interfaceMainContext
+  on clearButton buttonActivated
+    $ runReaderT clearProjects interfaceMainContext
+  on showProjectTrackedTimeButton buttonActivated
+    $ (runReaderT $ showProjectTrackedTime trackedTimeDialog) interfaceMainContext
 
   forkIO $
    sequence_ $ repeat ( do

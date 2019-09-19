@@ -17,6 +17,7 @@ data Issue = Issue {
   , _issueCreationDate       :: Day
   , _issueLastTrackTimestamp :: Int
   , _issueTimeRecorded       :: Int
+  , _issueDescription        :: String
   , _issueTrackingStatus     :: Bool
 } deriving (Show)
 
@@ -28,6 +29,7 @@ instance Binary Issue where
     put (show $ _issueCreationDate issue)
     put (_issueLastTrackTimestamp issue)
     put (_issueTimeRecorded issue)
+    put (_issueDescription issue)
     put (_issueTrackingStatus issue)
   get = do
     _issueName               <- get
@@ -35,6 +37,7 @@ instance Binary Issue where
     _issueCreationDate       <- get >>= parseTimeM True defaultTimeLocale "%Y-%-m-%-d"
     _issueLastTrackTimestamp <- get
     _issueTimeRecorded       <- get
+    _issueDescription        <- get
     _issueTrackingStatus     <- get
     return Issue {..}
     

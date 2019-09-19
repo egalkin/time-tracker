@@ -3,7 +3,7 @@
 module Model.Types
      ( ContextIO
      , Message
-     , ThreadType
+     , ThreadType(..)
      , InterfaceMainContext(..)
      , IssueUiFieldsBundle(..)
      , ProjectUiFieldsBundle(..)
@@ -37,22 +37,25 @@ data IssueUiFieldsBundle = IssueUiFieldsBundle {
     _issueNameField           :: Entry
   , _issuePriorityField       :: SpinButton
   , _issueTrackingStatusField :: CheckButton
+  , _issueDescriptionField    :: TextView
 }
 
--- | Type represents main interface context and store all 
+-- | Type represents main interface context and store all
 -- necessary for application data.
 data InterfaceMainContext = InterfaceMainContext {
     _projectsStore         :: ListStore Project
+  , _sortedProjectsStore   :: TypedTreeModelSort Project
   , _projectsView          :: TreeView
+  , _sortedIssuesStore     :: TypedTreeModelSort Issue
   , _projectUiFieldsBundle :: ProjectUiFieldsBundle
   , _issuesStore           :: ListStore Issue
-  , _issuesView             :: TreeView
+  , _issuesView            :: TreeView
   , _issueUiFieldsBundle   :: IssueUiFieldsBundle
   , _activeProject         :: IORef (Maybe Int)
+  , _activeIssue           :: IORef (Maybe Int)
   , _trackedTimeStatusbar  :: Statusbar
   , _notificationDialog    :: Dialog
   , _notificationStatusbar :: Statusbar
-  , _sortedIssuesStore     :: TypedTreeModelSort Issue
 }
 
 

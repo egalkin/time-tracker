@@ -1,3 +1,5 @@
+{-# LANGUAGE RecordWildCards #-}
+
 module UI.PrimaryInterface
      ( buildMainContext
      , saveStateAndQuit
@@ -24,43 +26,36 @@ buildMainContext :: Builder
                  -> TreeView
                  -> TreeView
                  -> IO InterfaceMainContext
-buildMainContext gui projectsView issuesView = do
-  (projectsStore, issuesStore, sortedIssuesStore) <- initStores projectsView issuesView
-  projectUiFieldsBundle                           <- initProjectUiFieldBundle gui
-  issueUiFieldsBundle                             <- initIssueUiFieldBundle gui
-  activeProject                                   <- newIORef Nothing
-  trackedTimeStatusbar                            <- builderGetObject gui castToStatusbar "issueTimeTrackedStatusbar"
-  notificationDialog                              <- builderGetObject gui castToDialog "notificationDialog"
-  notificationStatusbar                           <- builderGetObject gui castToStatusbar "notificationStatusbar"
+buildMainContext gui _projectsView _issuesView = do
+  (  _projectsStore
+   , _sortedProjectsStore
+   , _issuesStore
+   , _sortedIssuesStore)  <- initStores _projectsView _issuesView
+  _projectUiFieldsBundle  <- initProjectUiFieldBundle gui
+  _issueUiFieldsBundle    <- initIssueUiFieldBundle gui
+  _activeProject          <- newIORef Nothing
+  _activeIssue            <- newIORef Nothing
+  _trackedTimeStatusbar   <- builderGetObject gui castToStatusbar "issueTimeTrackedStatusbar"
+  _notificationDialog     <- builderGetObject gui castToDialog "notificationDialog"
+  _notificationStatusbar  <- builderGetObject gui castToStatusbar "notificationStatusbar"
 
-  return InterfaceMainContext {
-    _projectsStore         = projectsStore,
-    _projectsView          = projectsView,
-    _projectUiFieldsBundle = projectUiFieldsBundle,
-    _issuesStore           = issuesStore,
-    _issuesView            = issuesView,
-    _issueUiFieldsBundle   = issueUiFieldsBundle,
-    _activeProject         = activeProject,
-    _trackedTimeStatusbar  = trackedTimeStatusbar,
-    _notificationDialog    = notificationDialog,
-    _notificationStatusbar = notificationStatusbar,
-    _sortedIssuesStore     = sortedIssuesStore
-  }
+  return InterfaceMainContext {..}
   
   
 initStores :: TreeViewClass view
              => view
              -> view
-             -> IO (View.ListStore Project, View.ListStore Issue, View.TypedTreeModelSort Issue)
+             -> IO (ListStore Project,  TypedTreeModelSort Project, ListStore Issue, TypedTreeModelSort Issue)
 initStores projectsView issuesView = do
-  projectStore      <- initProjectStore
-  issuesStore       <- storeImpl []
-  sortedIssuesStore <- View.treeModelSortNewWithModel issuesStore
-  View.treeViewSetModel projectsView projectStore
+  projectStore          <- initProjectStore
+  sortedProjectsStore   <- View.treeModelSortNewWithModel projectStore
+  issuesStore           <- storeImpl []
+  sortedIssuesStore     <- View.treeModelSortNewWithModel issuesStore
+  View.treeViewSetModel projectsView sortedProjectsStore
   View.treeViewSetModel issuesView sortedIssuesStore
-  setupProjectsView projectsView projectStore
+  setupProjectsView projectsView projectStore sortedProjectsStore
   setupIssuesView issuesView issuesStore sortedIssuesStore
-  return (projectStore, issuesStore, sortedIssuesStore)
+  return (projectStore, sortedProjectsStore, issuesStore, sortedIssuesStore)
 
 initProjectStore = do
   previousStateFlag <- doesFileExist "projects.dat"
@@ -71,11 +66,11 @@ initProjectStore = do
   else 
     storeImpl []
 
-updateProject :: Project -> IO Project 
+updateProject :: Project -> IO Project
 updateProject project = do
-  updatedIssues <- mapM updateIssue (project^.projectIssues) 
+  updatedIssues <- mapM updateIssueTiming (project^.projectIssues)
   return $ project & projectIssues .~ updatedIssues
-  
+
 
 saveStateAndQuit :: ContextIO ()
 saveStateAndQuit = do

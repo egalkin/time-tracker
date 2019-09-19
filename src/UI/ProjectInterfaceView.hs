@@ -10,39 +10,41 @@ import Model.Types(ProjectUiFieldsBundle(..))
 import Model.Project
 import Model.TypesLenses
 import Control.Lens.Operators
+import Utils.ViewUtils
 
 setupProjectsView :: TreeViewClass view
                   => view
                   -> ListStore Project
+                  -> TypedTreeModelSort Project
                   -> IO ()
-setupProjectsView view model = do
+setupProjectsView view projectsStore sortedProjectsStore = do
+
   View.treeViewSetHeadersVisible view True
+
+  mapSortFunctionsToIds projectsStore sortedProjectsStore 1 (^.projectName)
+  mapSortFunctionsToIds projectsStore sortedProjectsStore 2 (^.projectCreationDate)
 
   nameCol <- View.treeViewColumnNew
   createdAtCol <- View.treeViewColumnNew
-  recordedCol <- View.treeViewColumnNew
-
-
+ 
   View.treeViewColumnSetTitle nameCol "Project name"
   View.treeViewColumnSetTitle createdAtCol "Created"
-  View.treeViewColumnSetTitle recordedCol "Total time recorded"
 
-  nameRender      <- View.cellRendererTextNew
-  createAtdRender <- View.cellRendererTextNew
-  recordedRender  <- View.cellRendererTextNew
+  renderNameCol      <- View.cellRendererTextNew
+  renderCreatedAtCol <- View.cellRendererTextNew
 
-  View.cellLayoutPackStart nameCol nameRender True
-  View.cellLayoutPackStart createdAtCol createAtdRender True
-  View.cellLayoutPackStart recordedCol recordedRender True
+  View.cellLayoutPackStart nameCol renderNameCol True
+  View.cellLayoutPackStart createdAtCol renderCreatedAtCol True
 
-  View.cellLayoutSetAttributes nameCol nameRender model $ \row -> [ View.cellText := row^.projectName ]
-  View.cellLayoutSetAttributes createdAtCol createAtdRender model $ \row -> [ View.cellText := show $ row^.projectCreationDate ]
-  View.cellLayoutSetAttributes recordedCol recordedRender model $ \row -> [ View.cellText := show $ row^.projectTimeRecorded ]
+
+  mapModelsFields nameCol renderNameCol projectsStore sortedProjectsStore (^.projectName)
+  mapModelsFields createdAtCol renderCreatedAtCol projectsStore sortedProjectsStore (show . (^.projectCreationDate))
 
   View.treeViewAppendColumn view nameCol
   View.treeViewAppendColumn view createdAtCol
-  View.treeViewAppendColumn view recordedCol
-  return ()
+  
+  View.treeViewColumnSetSortColumnId nameCol 1
+  View.treeViewColumnSetSortColumnId createdAtCol 2
 
 initProjectUiFieldBundle :: Builder -> IO ProjectUiFieldsBundle
 initProjectUiFieldBundle gui = do

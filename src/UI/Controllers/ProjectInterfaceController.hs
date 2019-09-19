@@ -41,10 +41,9 @@ buildProject = do
     case name of
       []   -> return $ Left "Project name can't be empty"
       str  -> return $ Right Project {
-                           _projectName         = name,
-                           _projectCreationDate = creationDate,
-                           _projectTimeRecorded = 0,
-                           _projectIssues       = []
+                             _projectName         = name
+                           , _projectCreationDate = creationDate
+                           , _projectIssues       = []
                            }
 
 

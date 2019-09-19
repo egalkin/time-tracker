@@ -2,11 +2,11 @@ module UI.Dialogs where
 
 import Graphics.UI.Gtk
 
-initAddIssueDialog :: Builder -> IO Dialog
-initAddIssueDialog gui = do
-  addIssueDialog <- builderGetObject gui castToDialog "addIssueDialog"
-  dialogAddButton addIssueDialog "Create" ResponseAccept
-  return addIssueDialog
+initIssueDialog :: Builder -> IO (Dialog, Button)
+initIssueDialog gui = do
+  issueDialog       <- builderGetObject gui castToDialog "addIssueDialog"
+  issueActionButton <- dialogAddButton issueDialog "Create" ResponseAccept
+  return (issueDialog, issueActionButton) 
 
 initTrackedTimeDialog :: Builder -> IO Dialog
 initTrackedTimeDialog gui = do

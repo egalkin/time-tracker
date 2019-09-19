@@ -1,9 +1,10 @@
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
 -- | Module provides parser combinators for issue parsing.
 module Parsers.IssueParser 
   ( parseIssues
+  , parseProjectIssues 
+  , projectIssue
   ) where
 
 import Text.Megaparsec
@@ -24,18 +25,26 @@ import Utils.TrackedTimeUtils(trackedTimeToInt)
 
 import Data.Time.Clock.System
 
--- | Parse issue from string.
+import Parsers.BaseParsers
+
+-- | Parse issue from file.
 -- Returns list of Either with parsed 'Issue' instances and errors.
 parseIssues :: FilePath -> IO [Either (ParseError Char Dec) Issue]
 parseIssues path = do
   contents <- readFile path
   return $ map (parse issue "") (lines contents)
 
+projectIssue :: Parser Issue
+projectIssue = char '#' *>  sc *> issue <* newline  
+
+parseProjectIssues :: Parser [Issue]
+parseProjectIssues = many parseProjectIssue 
+
 -- | Parse issue string representation.
 issue :: Parser Issue
 issue = do
   sc
-  _issueName               <- concat <$> name
+  _issueName               <- letterString
   char '|'
   _issuePriority           <- priority
   char '|'
@@ -45,30 +54,14 @@ issue = do
   _issueTimeRecorded       <- trackedTimeToInt <$> timeTracked
   char '|'
   _issueTrackingStatus     <- trackingStatus
+  char '|'
+  _issueDescription        <- concat <$> description
   return Issue {..}
 
--- | Parse whitespaces.
-sc :: Parser ()
-sc = L.space (void $ some (char ' ' <|> char '\t')) empty empty
-
--- | Parse word consisting of letters.
-word :: Parser String 
-word = do
-  word <- some letterChar 
-  ws   <- many $ char ' ' 
-  return $ word ++ ws
-
--- | Parse issue's name.
-name :: Parser [String]
-name = some word
 
 -- | Parse issue's priority.
 priority :: Parser Int
 priority = fromIntegral <$> L.integer <* sc
-
--- | Parse issue's creation date.
-creationDate :: Parser Day
-creationDate = (some (try digitChar <|> char '-') >>= parseTimeM True defaultTimeLocale "%Y-%-m-%-d") <* sc
 
 -- | Parse issue's time tracked.
 timeTracked :: Parser TrackedTime
@@ -95,3 +88,6 @@ minsOrSecs = try withLeadingZero <|> withoutLeadingZero
 trackingStatus :: Parser Bool
 trackingStatus =  read <$> choice [string "True", string "False"] <* sc
 
+-- | Parse issues description
+description :: Parser [String]
+description = char '[' *> some word <* char ']'

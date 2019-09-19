@@ -1,7 +1,7 @@
 module UI.IssueInterfaceView
      ( initIssueUiFieldBundle
      , setupIssuesView
-     )where
+     ) where
 
 import Graphics.UI.Gtk
 import qualified Graphics.UI.Gtk.ModelView as View
@@ -9,6 +9,7 @@ import qualified Graphics.UI.Gtk.ModelView as View
 import Model.Types(IssueUiFieldsBundle(..))
 import Model.Issue
 import Utils.TrackedTimeUtils(convertSecondsToTrackedTime)
+import Utils.ViewUtils
 import Model.TypesLenses
 import Model.TrackedTime
 import Control.Lens.Operators
@@ -25,6 +26,7 @@ setupIssuesView view issuesStore sortedIssueStore = do
   mapSortFunctionsToIds issuesStore sortedIssueStore 1 (^.issueName)
   mapSortFunctionsToIds issuesStore sortedIssueStore 2 (^.issuePriority)
   mapSortFunctionsToIds issuesStore sortedIssueStore 3 (^.issueCreationDate)
+  mapSortFunctionsToIds issuesStore sortedIssueStore 4 (^.issueTimeRecorded)
   
   nameCol      <- View.treeViewColumnNew
   priorityCol  <- View.treeViewColumnNew
@@ -60,44 +62,20 @@ setupIssuesView view issuesStore sortedIssueStore = do
   View.treeViewColumnSetSortColumnId nameCol 1
   View.treeViewColumnSetSortColumnId priorityCol 2
   View.treeViewColumnSetSortColumnId createdAtCol 3
-
-mapModelsFields :: TreeViewColumn
-                  -> CellRendererText
-                  -> ListStore Issue
-                  -> TypedTreeModelSort Issue
-                  -> (Issue -> String)
-                  -> IO ()
-mapModelsFields col render model sortedModel displayFunc =
-  View.cellLayoutSetAttributeFunc col render sortedModel $ \iter -> do
-       cIter <- View.treeModelSortConvertIterToChildIter sortedModel iter
-       issue <- View.treeModelGetRow model cIter
-       set render [View.cellText := displayFunc issue]
-
-
-mapSortFunctionsToIds :: Ord a
-                        => ListStore Issue
-                        -> TypedTreeModelSort Issue
-                        -> Int
-                        -> (Issue -> a)
-                        -> IO()
-mapSortFunctionsToIds issuesStore sortedIssueStore funcId compareField = 
-  View.treeSortableSetSortFunc sortedIssueStore funcId $ \iter1 iter2 -> do
-      issue1 <- View.customStoreGetRow issuesStore iter1
-      issue2 <- View.customStoreGetRow issuesStore iter2
-      return (compare (compareField issue1) (compareField issue2))       
-
-
+  View.treeViewColumnSetSortColumnId recordedCol 4
 
 initIssueUiFieldBundle :: Builder -> IO IssueUiFieldsBundle
 initIssueUiFieldBundle gui = do
   issueNameField          <- builderGetObject gui castToEntry "issueNameField"
   issuePriorityField      <- builderGetObject gui castToSpinButton "issuePriorityField"
   issueStartTrackingField <- builderGetObject gui castToCheckButton "issueTrackingStatusField"
+  issueDescriptionField   <- builderGetObject gui castToTextView "issueDescriptionField"
 
   return IssueUiFieldsBundle {
-    _issueNameField                = issueNameField,
-    _issuePriorityField            = issuePriorityField,
-    _issueTrackingStatusField      = issueStartTrackingField
+      _issueNameField                = issueNameField
+    , _issuePriorityField            = issuePriorityField
+    , _issueTrackingStatusField      = issueStartTrackingField
+    , _issueDescriptionField         = issueDescriptionField
   }
 
 
