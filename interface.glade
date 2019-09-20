@@ -126,7 +126,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkLabel" id="label2">
+                              <object class="GtkLabel" id="projectNameLabel">
                                 <property name="visible">True</property>
                                 <property name="xalign">1</property>
                                 <property name="label" translatable="yes">Project name:</property>
@@ -137,7 +137,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkButton" id="insert">
+                              <object class="GtkButton" id="insertProjectButton">
                                 <property name="label" translatable="yes">insert</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
@@ -157,9 +157,9 @@
                           </object>
                         </child>
                         <child type="label">
-                          <object class="GtkLabel" id="label29">
+                          <object class="GtkLabel" id="projectCreationLabel">
                             <property name="visible">True</property>
-                            <property name="label" translatable="yes">&lt;b&gt;Value&lt;/b&gt;</property>
+                            <property name="label" translatable="yes">&lt;b&gt;Project creation&lt;/b&gt;</property>
                             <property name="use_markup">True</property>
                           </object>
                         </child>
@@ -175,8 +175,8 @@
                         <property name="visible">True</property>
                         <property name="spacing">6</property>
                         <child>
-                          <object class="GtkButton" id="remove">
-                            <property name="label" translatable="yes">delete</property>
+                          <object class="GtkButton" id="removeProjectButton">
+                            <property name="label" translatable="yes">Remove</property>
                             <property name="width_request">54</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -188,8 +188,8 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkButton" id="clear">
-                            <property name="label" translatable="yes">clear</property>
+                          <object class="GtkButton" id="clearProjectsButton">
+                            <property name="label" translatable="yes">Clear</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
@@ -250,7 +250,7 @@
                     <property name="visible">True</property>
                     <property name="spacing">6</property>
                     <child>
-                      <object class="GtkButton" id="issueButton">
+                      <object class="GtkButton" id="addIssueButton">
                         <property name="label" translatable="yes">Add new Issue</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
@@ -503,6 +503,7 @@
   </object>
   <object class="GtkDialog" id="trackedTimeDialog">
     <property name="border_width">5</property>
+    <property name="title" translatable="yes"> </property>
     <property name="type_hint">dialog</property>
     <property name="transient_for">appWindow</property>
     <child internal-child="vbox">

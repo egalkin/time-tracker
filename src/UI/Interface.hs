@@ -43,13 +43,14 @@ initApp = do
   fileChooserDialog                <- initFileChooserDialog win
   folderChooserDialog              <- initFolderChooserDialog win
 
-  insertProjectButton          <- builderGetObject gui castToButton "insert"
-  addIssueButton               <- builderGetObject gui castToButton "issueButton"
-  showProjectTrackedTimeButton <- builderGetObject gui castToButton "projectTrackedTimeButton"
+  insertProjectButton          <- builderGetObject gui castToButton "insertProjectButton"
+  removeProjectButton          <- builderGetObject gui castToButton "removeProjectButton"
+  clearProjectsButton          <- builderGetObject gui castToButton "clearProjectsButton"
+  addIssueButton               <- builderGetObject gui castToButton "addIssueButton"
   removeIssueButton            <- builderGetObject gui castToButton "removeIssueButton"
   clearIssuesButton            <- builderGetObject gui castToButton "clearIssuesButton"
-  removeProjectButton          <- builderGetObject gui castToButton "remove"
-  clearProjectsButton          <- builderGetObject gui castToButton "clear"
+  showProjectTrackedTimeButton <- builderGetObject gui castToButton "projectTrackedTimeButton"
+
 
   exportProjectsItem   <- builderGetObject gui castToMenuItem "exportProjectsItem"
   importProjectsItem   <- builderGetObject gui castToMenuItem "importProjectsItem"
