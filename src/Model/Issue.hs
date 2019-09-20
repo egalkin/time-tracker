@@ -9,6 +9,7 @@ module Model.Issue
 import Data.Time.Calendar
 import Data.Time.Format
 import Data.Binary
+import Data.List
 
 -- | This type stores data about issue.
 data Issue = Issue {
@@ -19,7 +20,7 @@ data Issue = Issue {
   , _issueTimeRecorded       :: Int
   , _issueDescription        :: String
   , _issueTrackingStatus     :: Bool
-} deriving (Show)
+}
 
 -- | This instance used to provide serialization opportunity.
 instance Binary Issue where
@@ -41,3 +42,4 @@ instance Binary Issue where
     _issueTrackingStatus     <- get
     return Issue {..}
     
+ 

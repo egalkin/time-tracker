@@ -3,7 +3,7 @@
 -- | Module provides parser combinators for issue parsing.
 module Parsers.IssueParser 
   ( parseIssues
-  , parseProjectIssues 
+  , parseProjectIssues
   , projectIssue
   ) where
 
@@ -35,10 +35,10 @@ parseIssues path = do
   return $ map (parse issue "") (lines contents)
 
 projectIssue :: Parser Issue
-projectIssue = char '#' *>  sc *> issue <* newline  
+projectIssue = char '#' *> sc *> issue <* some newline
 
 parseProjectIssues :: Parser [Issue]
-parseProjectIssues = many parseProjectIssue 
+parseProjectIssues = many projectIssue
 
 -- | Parse issue string representation.
 issue :: Parser Issue

@@ -11,6 +11,7 @@ import UI.PrimaryInterface
 import Model.TypesLenses
 import UI.Notifications
 import UI.Controllers.FileParsingController
+import UI.Controllers.FileWritingController
 import UI.Dialogs
 import Model.TrackedTime
 import UI.TrackedTimeView
@@ -39,6 +40,7 @@ initInterface = do
   (issueDialog, issueActionButton) <- initIssueDialog gui
   trackedTimeDialog                <- initTrackedTimeDialog gui
   fileChooserDialog                <- initFileChooserDialog win
+  folderChooserDialog              <- initFolderChooserDialog win
 
   insertButton                 <- builderGetObject gui castToButton "insert"
   addIssueButton               <- builderGetObject gui castToButton "issueButton"
@@ -49,30 +51,46 @@ initInterface = do
   clearButton                  <- builderGetObject gui castToButton "clear"
 
 
+  exportProjectsItem   <- builderGetObject gui castToMenuItem "exportProjectsItem"
+  importProjectsItem   <- builderGetObject gui castToMenuItem "importProjectsItem"
+  importIssuesItem     <- builderGetObject gui castToMenuItem "importIssuesItem"
 
+  on exportProjectsItem menuItemActivated
+    $ (runReaderT $ exportProjects folderChooserDialog) interfaceMainContext
 
-  parseItem     <- builderGetObject gui castToMenuItem "parseIssues"
+  on importProjectsItem menuItemActivated
+    $ (runReaderT $ importProjects fileChooserDialog) interfaceMainContext
 
-  on parseItem menuItemActivated
-    $ (runReaderT $ openFileChooser fileChooserDialog) interfaceMainContext
+  on importIssuesItem menuItemActivated
+    $ (runReaderT $ importIssues fileChooserDialog) interfaceMainContext
+
   on insertButton buttonActivated
     $ runReaderT addProject interfaceMainContext
+
   on projectsView cursorChanged
     $ runReaderT (displayIssues GtkThread) interfaceMainContext
+
   on issuesView cursorChanged
     $ runReaderT writeActiveIssue interfaceMainContext
+
   on removeIssueButton buttonActivated
     $ runReaderT removeIssue interfaceMainContext
+
   on clearIssuesButton buttonActivated
     $ runReaderT clearIssues interfaceMainContext
+
   on issuesView rowActivated
     $ \path _ -> (runReaderT $ displayIssueInformation issueDialog issueActionButton path) interfaceMainContext
+
   on addIssueButton buttonActivated
     $ (runReaderT $ addIssue issueDialog issueActionButton) interfaceMainContext
+
   on removeButton buttonActivated
     $ runReaderT removeProject interfaceMainContext
+
   on clearButton buttonActivated
     $ runReaderT clearProjects interfaceMainContext
+
   on showProjectTrackedTimeButton buttonActivated
     $ (runReaderT $ showProjectTrackedTime trackedTimeDialog) interfaceMainContext
 

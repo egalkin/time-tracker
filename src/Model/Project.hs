@@ -15,7 +15,7 @@ data Project = Project {
     _projectName         :: String
   , _projectCreationDate :: Day
   , _projectIssues       :: [Issue]
-} deriving (Show)
+} 
 
 -- | This instance used to provide serialization opportunity.
 instance Binary Project where
@@ -28,4 +28,3 @@ instance Binary Project where
     _projectCreationDate <- get >>= parseTimeM True defaultTimeLocale "%Y-%-m-%-d"
     _projectIssues       <- get
     return Project {..}
-

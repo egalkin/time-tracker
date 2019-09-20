@@ -22,13 +22,22 @@ convertSecondsToTrackedTime seconds = do
   let restTime = seconds - hours * secondsInHour
   TrackedTime { _hours = hours, _minutes = restTime `div` 60, _seconds = restTime `mod` 60}
 
--- | Counts seconds for given 'Issue' instance.
+
+countIssueTrackedSecondsIgnoringStatus :: Issue -> IO Int
+countIssueTrackedSecondsIgnoringStatus issue = do
+  currentTimestamp <- getSystemSeconds
+  return $ issue^.issueTimeRecorded + (currentTimestamp - choseIssueLastTrackTimestamp (issue^.issueLastTrackTimestamp) currentTimestamp)
+  
+
+-- | Counts seconds for given 'Issue' instance.  
 countIssueTrackedSeconds :: Issue -> IO Int
 countIssueTrackedSeconds issue
   | not (issue^.issueTrackingStatus) = return $ issue^.issueTimeRecorded
-  | issue^.issueTrackingStatus       = do
-      currentTimestamp <- getSystemSeconds
-      return $ issue^.issueTimeRecorded + (currentTimestamp - issue^.issueLastTrackTimestamp)
+  | issue^.issueTrackingStatus       = countIssueTrackedSecondsIgnoringStatus issue
+
+choseIssueLastTrackTimestamp :: Int -> Int -> Int
+choseIssueLastTrackTimestamp 0 currentTimestamp = currentTimestamp 
+choseIssueLastTrackTimestamp timestamp _        = timestamp
 
 -- | Count 'TrackedTime' for given 'Issue' instance.
 countIssueTrackedTime :: Issue -> IO TrackedTime

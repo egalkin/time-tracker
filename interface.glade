@@ -36,10 +36,26 @@
                   <object class="GtkMenu" id="menu1">
                     <property name="visible">True</property>
                     <child>
-                      <object class="GtkImageMenuItem" id="parseIssues">
-                        <property name="label" translatable="yes">Parse issues</property>
+                      <object class="GtkImageMenuItem" id="exportProjectsItem">
+                        <property name="label" translatable="yes">Export projects</property>
                         <property name="visible">True</property>
                         <property name="image">image1</property>
+                        <property name="use_stock">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="importProjectsItem">
+                        <property name="label" translatable="yes">Import projects</property>
+                        <property name="visible">True</property>
+                        <property name="image">image2</property>
+                        <property name="use_stock">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="importIssuesItem">
+                        <property name="label" translatable="yes">Import issues</property>
+                        <property name="visible">True</property>
+                        <property name="image">image3</property>
                         <property name="use_stock">False</property>
                       </object>
                     </child>
@@ -522,5 +538,16 @@
         </child>
       </object>
     </child>
+  </object>
+  <object class="GtkImage" id="image2">
+    <property name="visible">True</property>
+    <property name="xalign">0.47999998927116394</property>
+    <property name="stock">gtk-missing-image</property>
+  </object>
+  <object class="GtkImage" id="image3">
+    <property name="visible">True</property>
+    <property name="xalign">0.46000000834465027</property>
+    <property name="yalign">0.57999998331069946</property>
+    <property name="stock">gtk-missing-image</property>
   </object>
 </interface>

@@ -15,7 +15,7 @@ import Control.Monad.Reader
 
 import UI.Notifications
 import Utils.TimeUtils
-import Utils.TrackedTimeUtils(countIssueTrackedSeconds)
+import Utils.TrackedTimeUtils(countIssueTrackedSeconds, countIssueTrackedSecondsIgnoringStatus)
 import Model.TrackedTime
 
 updateIssueTiming :: Issue -> IO Issue
@@ -31,6 +31,7 @@ displayIssuesHelper threadType path = do
   lift $ do
     writeIORef (context^.activeProject) (Just $ head path)
     updatedIssues <- mapM updateIssueTiming (projectEntity^.projectIssues)
+    let updatedProjectEntity = projectEntity
     let updatedProjectEntity = projectEntity & projectIssues .~ updatedIssues
     if threadType == TimeHelperThread then
       mapM_ (uncurry $ View.listStoreSetValue (context^.issuesStore)) (zip [0..] (updatedProjectEntity^.projectIssues))
@@ -203,6 +204,7 @@ updateIssue issue = do
     priority       <- fromIntegral.round <$> spinButtonGetValue (fieldsBundle^.issuePriorityField)
     trackingStatus <- toggleButtonGetActive $ fieldsBundle^.issueTrackingStatusField
     description    <- getIssueDescriptionText (fieldsBundle^.issueDescriptionField)
+    trackedTime    <- countIssueTrackedSecondsIgnoringStatus issue
     case name of
       []  -> return $ Left "Issue's name can't be empty"
       str -> return $ Right $ issue {
@@ -210,6 +212,7 @@ updateIssue issue = do
               , _issuePriority       = priority
               , _issueTrackingStatus = trackingStatus
               , _issueDescription    = description
+              , _issueTimeRecorded   = trackedTime
             }
 
 

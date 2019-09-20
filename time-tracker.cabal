@@ -42,10 +42,14 @@ library
     , UI.Controllers.ProjectInterfaceController
     , UI.Controllers.IssueInterfaceController
     , UI.Controllers.FileParsingController
+    , UI.Controllers.FileWritingController
     , Parsers.IssueParser
+    , Parsers.BaseParsers
+    , Parsers.ProjectParser
     , Utils.TimeUtils
     , Utils.TrackedTimeUtils
     , Utils.ViewUtils
+    , Utils.ExportUtils
 
   other-modules:
       Paths_time_tracker
