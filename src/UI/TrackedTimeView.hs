@@ -1,4 +1,9 @@
-module UI.TrackedTimeView where
+
+-- | This module provides functions for showing
+-- projects tracked time.
+module UI.TrackedTimeView 
+     ( showProjectTrackedTime
+     ) where
 
 import Graphics.UI.Gtk
 import qualified Graphics.UI.Gtk.ModelView as View
@@ -6,6 +11,7 @@ import qualified Graphics.UI.Gtk.ModelView as View
 import Model.Types(ContextIO, Message)
 import Model.TrackedTime
 import Model.TypesLenses
+import UI.Notifications
 import Utils.TrackedTimeUtils
 
 import Data.IORef
@@ -13,26 +19,26 @@ import Data.IORef
 import Control.Monad.Reader
 import Control.Lens.Operators
 
-import UI.Notifications
-
+-- | Shows tracked time.
 showTrackedTime :: Dialog -> Message -> TrackedTime -> ContextIO ()
 showTrackedTime dialog message trackedTime = do
   context <- ask
-  lift $ do
+  liftIO $ do
     contextId <- statusbarGetContextId (context^.notificationStatusbar) ""
-    statusbarPush (context^.trackedTimeStatusbar) contextId (message ++ show trackedTime)
+    void $ statusbarPush (context^.trackedTimeStatusbar) contextId (message ++ show trackedTime)
     widgetShow dialog
-    dialogRun dialog
+    void $ dialogRun dialog
     widgetHide dialog
     statusbarPop (context^.trackedTimeStatusbar) contextId
 
+-- | Shows project totally tracked time.
 showProjectTrackedTime :: Dialog -> ContextIO ()
 showProjectTrackedTime dialog = do
   context <- ask
-  activeProject <- lift $ readIORef (context^.activeProject)
-  case activeProject of
+  actProject <- liftIO $ readIORef (context^.activeProject)
+  case actProject of
     Just projectId -> do
-                        project <- lift $ View.listStoreGetValue (context^.projectsStore) projectId
-                        trackedTime <- lift $ countProjectTrackedTime project
+                        project <- liftIO $ View.listStoreGetValue (context^.projectsStore) projectId
+                        trackedTime <- liftIO $ countProjectTrackedTime project
                         showTrackedTime dialog "Project time tracked: " trackedTime
     Nothing        -> showNoProjectChosen

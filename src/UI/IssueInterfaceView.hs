@@ -1,3 +1,6 @@
+{-# LANGUAGE RecordWildCards #-}
+
+-- | This model set up view model for displaying issues data.
 module UI.IssueInterfaceView
      ( initIssueUiFieldBundle
      , setupIssuesView
@@ -8,25 +11,27 @@ import qualified Graphics.UI.Gtk.ModelView as View
 
 import Model.Types(IssueUiFieldsBundle(..))
 import Model.Issue
+import Model.TypesLenses
 import Utils.TrackedTimeUtils(convertSecondsToTrackedTime)
 import Utils.ViewUtils
-import Model.TypesLenses
-import Model.TrackedTime
+
+import Control.Monad(void)
 import Control.Lens.Operators
 
+-- | Set up issues TreeView configuration.
 setupIssuesView :: TreeViewClass view
                   => view
                   -> ListStore Issue
                   -> TypedTreeModelSort Issue
                   -> IO ()
-setupIssuesView view issuesStore sortedIssueStore = do
+setupIssuesView view store sortedStore = do
 
   View.treeViewSetHeadersVisible view True
 
-  mapSortFunctionsToIds issuesStore sortedIssueStore 1 (^.issueName)
-  mapSortFunctionsToIds issuesStore sortedIssueStore 2 (^.issuePriority)
-  mapSortFunctionsToIds issuesStore sortedIssueStore 3 (^.issueCreationDate)
-  mapSortFunctionsToIds issuesStore sortedIssueStore 4 (^.issueTimeRecorded)
+  mapSortFunctionsToIds store sortedStore 1 (^.issueName)
+  mapSortFunctionsToIds store sortedStore 2 (^.issuePriority)
+  mapSortFunctionsToIds store sortedStore 3 (^.issueCreationDate)
+  mapSortFunctionsToIds store sortedStore 4 (^.issueTimeTracked)
   
   nameCol      <- View.treeViewColumnNew
   priorityCol  <- View.treeViewColumnNew
@@ -48,34 +53,30 @@ setupIssuesView view issuesStore sortedIssueStore = do
   View.cellLayoutPackStart createdAtCol renderCreatedAtCol True
   View.cellLayoutPackStart recordedCol renderRecordedCol True
 
-  mapModelsFields nameCol renderNameCol issuesStore sortedIssueStore (^.issueName)
-  mapModelsFields priorityCol renderPriorityCol issuesStore sortedIssueStore (show . (^.issuePriority))
-  mapModelsFields createdAtCol renderCreatedAtCol issuesStore sortedIssueStore (show . (^.issueCreationDate) )
-  mapModelsFields recordedCol renderRecordedCol issuesStore sortedIssueStore (show . convertSecondsToTrackedTime. (^.issueTimeRecorded) )
+  setModelsFields nameCol renderNameCol store sortedStore (^.issueName)
+  setModelsFields priorityCol renderPriorityCol store sortedStore (show . (^.issuePriority))
+  setModelsFields createdAtCol renderCreatedAtCol store sortedStore (show . (^.issueCreationDate) )
+  setModelsFields recordedCol renderRecordedCol store sortedStore (show . convertSecondsToTrackedTime. (^.issueTimeTracked) )
 
-
-  View.treeViewAppendColumn view nameCol
-  View.treeViewAppendColumn view priorityCol
-  View.treeViewAppendColumn view createdAtCol
-  View.treeViewAppendColumn view recordedCol
+  void $ View.treeViewAppendColumn view nameCol
+  void $ View.treeViewAppendColumn view priorityCol
+  void $ View.treeViewAppendColumn view createdAtCol
+  void $ View.treeViewAppendColumn view recordedCol
 
   View.treeViewColumnSetSortColumnId nameCol 1
   View.treeViewColumnSetSortColumnId priorityCol 2
   View.treeViewColumnSetSortColumnId createdAtCol 3
   View.treeViewColumnSetSortColumnId recordedCol 4
 
+-- | Initialize fields with issue input fields.
+-- Used for issue creating.
 initIssueUiFieldBundle :: Builder -> IO IssueUiFieldsBundle
 initIssueUiFieldBundle gui = do
-  issueNameField          <- builderGetObject gui castToEntry "issueNameField"
-  issuePriorityField      <- builderGetObject gui castToSpinButton "issuePriorityField"
-  issueStartTrackingField <- builderGetObject gui castToCheckButton "issueTrackingStatusField"
-  issueDescriptionField   <- builderGetObject gui castToTextView "issueDescriptionField"
+  _issueNameField           <- builderGetObject gui castToEntry "issueNameField"
+  _issuePriorityField       <- builderGetObject gui castToSpinButton "issuePriorityField"
+  _issueTrackingStatusField <- builderGetObject gui castToCheckButton "issueTrackingStatusField"
+  _issueDescriptionField    <- builderGetObject gui castToTextView "issueDescriptionField"
 
-  return IssueUiFieldsBundle {
-      _issueNameField                = issueNameField
-    , _issuePriorityField            = issuePriorityField
-    , _issueTrackingStatusField      = issueStartTrackingField
-    , _issueDescriptionField         = issueDescriptionField
-  }
+  return IssueUiFieldsBundle {..}
 
 

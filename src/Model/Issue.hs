@@ -9,7 +9,6 @@ module Model.Issue
 import Data.Time.Calendar
 import Data.Time.Format
 import Data.Binary
-import Data.List
 
 -- | This type stores data about issue.
 data Issue = Issue {
@@ -17,7 +16,7 @@ data Issue = Issue {
   , _issuePriority           :: Int
   , _issueCreationDate       :: Day
   , _issueLastTrackTimestamp :: Int
-  , _issueTimeRecorded       :: Int
+  , _issueTimeTracked        :: Int
   , _issueDescription        :: String
   , _issueTrackingStatus     :: Bool
 }
@@ -29,7 +28,7 @@ instance Binary Issue where
     put (_issuePriority issue)
     put (show $ _issueCreationDate issue)
     put (_issueLastTrackTimestamp issue)
-    put (_issueTimeRecorded issue)
+    put (_issueTimeTracked issue)
     put (_issueDescription issue)
     put (_issueTrackingStatus issue)
   get = do
@@ -37,7 +36,7 @@ instance Binary Issue where
     _issuePriority           <- get
     _issueCreationDate       <- get >>= parseTimeM True defaultTimeLocale "%Y-%-m-%-d"
     _issueLastTrackTimestamp <- get
-    _issueTimeRecorded       <- get
+    _issueTimeTracked       <- get
     _issueDescription        <- get
     _issueTrackingStatus     <- get
     return Issue {..}

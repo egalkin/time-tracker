@@ -262,7 +262,7 @@
                     </child>
                     <child>
                       <object class="GtkButton" id="removeIssueButton">
-                        <property name="label" translatable="yes">Remove chosed issue</property>
+                        <property name="label" translatable="yes">Remove chosen issue</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>

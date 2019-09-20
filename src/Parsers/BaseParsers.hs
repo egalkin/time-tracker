@@ -1,3 +1,5 @@
+
+-- | Module provides some basics parsers.
 module Parsers.BaseParsers
      ( creationDate
      , letterString
@@ -5,8 +7,6 @@ module Parsers.BaseParsers
      , word) where
 
 import Text.Megaparsec
-import Text.Megaparsec.Char
-import Text.Megaparsec.Error
 import qualified Text.Megaparsec.Lexer as L
 import Text.Megaparsec.String
 
@@ -16,11 +16,6 @@ import Data.Time.Calendar
 import Control.Applicative
 import Control.Monad (void)
 
-import Model.Issue
-import Model.TrackedTime
-import Utils.TrackedTimeUtils(trackedTimeToInt)
-
-import Data.Time.Clock.System
 
 -- | Parse whitespaces.
 sc :: Parser ()
@@ -29,9 +24,9 @@ sc = L.space (void $ some (char ' ' <|> char '\t')) empty empty
 -- | Parse word consisting of letters.
 word :: Parser String 
 word = do
-  word <- some letterChar 
+  wr <- some letterChar 
   ws   <- many $ char ' ' 
-  return $ word ++ ws
+  return $ wr ++ ws
   
 -- | Parse string with whitespaces.
 letterString :: Parser String

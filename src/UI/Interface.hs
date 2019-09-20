@@ -1,104 +1,108 @@
-module UI.Interface where
+-- | Module that provides entry point to app.
+-- All behaviour logic sets here.
+module UI.Interface
+     ( initApp
+     ) where
 
 import Graphics.UI.Gtk
-import qualified Graphics.UI.Gtk.ModelView as View
 
-import Control.Monad.Reader
-
+import Model.Types(ThreadType(..))
+import UI.PrimaryInterface
+import UI.Dialogs
+import UI.TrackedTimeView
 import UI.Controllers.ProjectInterfaceController
 import UI.Controllers.IssueInterfaceController
-import UI.PrimaryInterface
-import Model.TypesLenses
-import UI.Notifications
 import UI.Controllers.FileParsingController
 import UI.Controllers.FileWritingController
-import UI.Dialogs
-import Model.TrackedTime
-import UI.TrackedTimeView
-import Model.Types(ThreadType(..))
 
-import System.Directory
+import Control.Monad.Reader
 import Control.Concurrent
 
-import Utils.TimeUtils
 
-initInterface = do
-  initGUI
+
+
+-- | Inits app and set all behaviour logic.
+initApp :: IO ()
+initApp = do
+  void initGUI
 
   gui <- builderNew
   builderAddFromFile gui "interface.glade"
 
   win <- builderGetObject gui castToWindow "appWindow"
 
-  projectsView <- builderGetObject gui castToTreeView "projectsView"
-  issuesView   <- builderGetObject gui castToTreeView "issuesView"
+  projectsViewItem <- builderGetObject gui castToTreeView "projectsView"
+  issuesViewItem   <- builderGetObject gui castToTreeView "issuesView"
 
-  interfaceMainContext <- buildMainContext gui projectsView issuesView
+  interfaceMainContext <- buildMainContext gui projectsViewItem issuesViewItem
   
-  on win objectDestroy $ runReaderT saveStateAndQuit interfaceMainContext
+  void $ on win objectDestroy $ runReaderT saveStateAndQuit interfaceMainContext
 
   (issueDialog, issueActionButton) <- initIssueDialog gui
   trackedTimeDialog                <- initTrackedTimeDialog gui
   fileChooserDialog                <- initFileChooserDialog win
   folderChooserDialog              <- initFolderChooserDialog win
 
-  insertButton                 <- builderGetObject gui castToButton "insert"
+  insertProjectButton          <- builderGetObject gui castToButton "insert"
   addIssueButton               <- builderGetObject gui castToButton "issueButton"
   showProjectTrackedTimeButton <- builderGetObject gui castToButton "projectTrackedTimeButton"
   removeIssueButton            <- builderGetObject gui castToButton "removeIssueButton"
   clearIssuesButton            <- builderGetObject gui castToButton "clearIssuesButton"
-  removeButton                 <- builderGetObject gui castToButton "remove"
-  clearButton                  <- builderGetObject gui castToButton "clear"
-
+  removeProjectButton          <- builderGetObject gui castToButton "remove"
+  clearProjectsButton          <- builderGetObject gui castToButton "clear"
 
   exportProjectsItem   <- builderGetObject gui castToMenuItem "exportProjectsItem"
   importProjectsItem   <- builderGetObject gui castToMenuItem "importProjectsItem"
   importIssuesItem     <- builderGetObject gui castToMenuItem "importIssuesItem"
 
-  on exportProjectsItem menuItemActivated
+  void $ on exportProjectsItem menuItemActivated
     $ (runReaderT $ exportProjects folderChooserDialog) interfaceMainContext
 
-  on importProjectsItem menuItemActivated
+  void $ on importProjectsItem menuItemActivated
     $ (runReaderT $ importProjects fileChooserDialog) interfaceMainContext
 
-  on importIssuesItem menuItemActivated
+  void $ on importIssuesItem menuItemActivated
     $ (runReaderT $ importIssues fileChooserDialog) interfaceMainContext
 
-  on insertButton buttonActivated
+  void $ on insertProjectButton buttonActivated
     $ runReaderT addProject interfaceMainContext
 
-  on projectsView cursorChanged
+  void $ on projectsViewItem cursorChanged
     $ runReaderT (displayIssues GtkThread) interfaceMainContext
 
-  on issuesView cursorChanged
+  void $ on issuesViewItem cursorChanged
     $ runReaderT writeActiveIssue interfaceMainContext
 
-  on removeIssueButton buttonActivated
+  void $ on removeIssueButton buttonActivated
     $ runReaderT removeIssue interfaceMainContext
 
-  on clearIssuesButton buttonActivated
+  void $ on clearIssuesButton buttonActivated
     $ runReaderT clearIssues interfaceMainContext
 
-  on issuesView rowActivated
+  void $ on issuesViewItem rowActivated
     $ \path _ -> (runReaderT $ displayIssueInformation issueDialog issueActionButton path) interfaceMainContext
 
-  on addIssueButton buttonActivated
+  void $ on addIssueButton buttonActivated
     $ (runReaderT $ addIssue issueDialog issueActionButton) interfaceMainContext
 
-  on removeButton buttonActivated
+  void $ on removeProjectButton buttonActivated
     $ runReaderT removeProject interfaceMainContext
 
-  on clearButton buttonActivated
+  void $ on clearProjectsButton buttonActivated
     $ runReaderT clearProjects interfaceMainContext
 
-  on showProjectTrackedTimeButton buttonActivated
+  void $ on showProjectTrackedTimeButton buttonActivated
     $ (runReaderT $ showProjectTrackedTime trackedTimeDialog) interfaceMainContext
 
-  forkIO $
-   sequence_ $ repeat ( do
-   threadDelay 1000000
-   postGUISync $ runReaderT (displayIssues TimeHelperThread) interfaceMainContext
+  -- | This block responsible for time ticking show.
+  -- Won't cause any data race, because postGUISync
+  -- sends action to main Gtk thread.
+  void $ forkIO $
+    sequence_ $ repeat ( do
+    threadDelay 500000
+    postGUISync $ runReaderT (displayIssues TimeHelperThread) interfaceMainContext
    )
 
   widgetShowAll win
   mainGUI
+

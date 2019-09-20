@@ -1,5 +1,7 @@
 {-# LANGUAGE RecordWildCards #-}
 
+-- | This module provides functions for main
+-- app context initialization.
 module UI.PrimaryInterface
      ( buildMainContext
      , saveStateAndQuit
@@ -8,20 +10,24 @@ module UI.PrimaryInterface
 import Graphics.UI.Gtk
 import qualified Graphics.UI.Gtk.ModelView as View
 
-import Data.IORef
-
-import Control.Monad.Reader
-import Control.Lens.Operators
-import Model.Types(ContextIO, Message, InterfaceMainContext(..))
+import Model.Types(ContextIO, InterfaceMainContext(..))
 import Model.Project
 import Model.Issue
+import Model.TypesLenses
 import UI.ProjectInterfaceView
 import UI.IssueInterfaceView
 import UI.Controllers.IssueInterfaceController
-import Model.TypesLenses
-import System.Directory
+
+import Data.IORef
 import Data.Binary
 
+import Control.Monad.Reader
+import Control.Lens.Operators
+
+import System.Directory
+
+-- | Builds main app context used in
+-- most of functions.
 buildMainContext :: Builder
                  -> TreeView
                  -> TreeView
@@ -41,22 +47,25 @@ buildMainContext gui _projectsView _issuesView = do
 
   return InterfaceMainContext {..}
   
-  
+-- | Initialize projects and issues data stores.
 initStores :: TreeViewClass view
              => view
              -> view
              -> IO (ListStore Project,  TypedTreeModelSort Project, ListStore Issue, TypedTreeModelSort Issue)
-initStores projectsView issuesView = do
-  projectStore          <- initProjectStore
-  sortedProjectsStore   <- View.treeModelSortNewWithModel projectStore
-  issuesStore           <- storeImpl []
-  sortedIssuesStore     <- View.treeModelSortNewWithModel issuesStore
-  View.treeViewSetModel projectsView sortedProjectsStore
-  View.treeViewSetModel issuesView sortedIssuesStore
-  setupProjectsView projectsView projectStore sortedProjectsStore
-  setupIssuesView issuesView issuesStore sortedIssuesStore
-  return (projectStore, sortedProjectsStore, issuesStore, sortedIssuesStore)
+initStores prView issView = do
+  prsStore       <- initProjectStore
+  sortedPrsStore <- View.treeModelSortNewWithModel prsStore
+  issStore       <- storeImpl []
+  sortedIssStore <- View.treeModelSortNewWithModel issStore
+  View.treeViewSetModel prView sortedPrsStore
+  View.treeViewSetModel issView sortedIssStore
+  setupProjectsView prView prsStore sortedPrsStore
+  setupIssuesView issView issStore sortedIssStore
+  return (prsStore, sortedPrsStore, issStore, sortedIssStore)
 
+-- | Reads serialized app state if exists, otherwise
+-- initialize app with empty projects state.
+initProjectStore :: IO (ListStore Project)
 initProjectStore = do
   previousStateFlag <- doesFileExist "projects.dat"
   if previousStateFlag then do
@@ -66,18 +75,24 @@ initProjectStore = do
   else 
     storeImpl []
 
+-- | Returns new store initialized with
+-- given data.
+storeImpl :: [a] -> IO (ListStore a)
+storeImpl = View.listStoreNew
+
+-- | Updates deserialized project timing.
 updateProject :: Project -> IO Project
 updateProject project = do
   updatedIssues <- mapM updateIssueTiming (project^.projectIssues)
   return $ project & projectIssues .~ updatedIssues
 
-
+-- | Saves app state and quit.
 saveStateAndQuit :: ContextIO ()
 saveStateAndQuit = do
   context <- ask
-  lift $ do
+  liftIO $ do
     projects <- View.listStoreToList (context^.projectsStore)
     encodeFile "projects.dat" projects
     mainQuit
 
-storeImpl = View.listStoreNew
+

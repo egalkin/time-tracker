@@ -1,24 +1,28 @@
+
+-- | Module encapsulate some functions for view model configuration.
+-- Used in 'IssueInterfaceView' and 'ProjectsInterfaceView".
 module Utils.ViewUtils
-     ( mapModelsFields
+     ( setModelsFields
      , mapSortFunctionsToIds
      ) where
 
 import Graphics.UI.Gtk
 import qualified Graphics.UI.Gtk.ModelView as View
 
-mapModelsFields :: TreeViewColumn
+-- | Set display way for model fields
+setModelsFields :: TreeViewColumn
                   -> CellRendererText
                   -> ListStore a
                   -> TypedTreeModelSort a
                   -> (a -> String)
                   -> IO ()
-mapModelsFields col render model sortedModel displayFunc =
+setModelsFields col render model sortedModel displayFunc =
   View.cellLayoutSetAttributeFunc col render sortedModel $ \iter -> do
        cIter <- View.treeModelSortConvertIterToChildIter sortedModel iter
        issue <- View.treeModelGetRow model cIter
        set render [View.cellText := displayFunc issue]
 
-
+-- | Map column sorting way to int.
 mapSortFunctionsToIds :: Ord b
                         => ListStore a
                         -> TypedTreeModelSort a

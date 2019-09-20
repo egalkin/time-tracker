@@ -11,12 +11,12 @@ module Model.Types
 
 import Graphics.UI.Gtk
 
-import Data.IORef
-import Data.Time.Calendar
-import Control.Monad.Reader
-
 import Model.Project
 import Model.Issue
+
+import Data.IORef
+
+import Control.Monad.Reader
 
 -- | Type represents runtime context.
 type ContextIO a = ReaderT InterfaceMainContext IO a
@@ -28,7 +28,7 @@ type Message = String
 data ThreadType = GtkThread | TimeHelperThread deriving (Eq)
 
 -- | Type represents fields for 'Project' construction.
-data ProjectUiFieldsBundle = ProjectUiFieldsBundle {
+newtype ProjectUiFieldsBundle = ProjectUiFieldsBundle {
     _projectNameField :: Entry
 }
 

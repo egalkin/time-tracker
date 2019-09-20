@@ -1,14 +1,18 @@
-module Utils.TrackedTimeUtils where
+module Utils.TrackedTimeUtils 
+     ( convertSecondsToTrackedTime
+     , countIssueTrackedSeconds
+     , countProjectTrackedTime
+     , trackedTimeToInt) where
 
 import Model.TrackedTime
 import Model.Issue
 import Model.Project
 import Model.TypesLenses
-
 import Utils.TimeUtils
 
-import Control.Lens.Operators
 import Data.List(foldl')
+
+import Control.Lens.Operators
 
 
 -- | Converts 'TrackedTime' to seconds time representation.
@@ -17,33 +21,21 @@ trackedTimeToInt time = time^.hours * 3600 + time^.minutes * 60 + time^.seconds
 
 -- | Converts seconds time representation to 'TrackedTime'.
 convertSecondsToTrackedTime :: Int -> TrackedTime
-convertSecondsToTrackedTime seconds = do
-  let hours    = seconds `div` secondsInHour
-  let restTime = seconds - hours * secondsInHour
-  TrackedTime { _hours = hours, _minutes = restTime `div` 60, _seconds = restTime `mod` 60}
+convertSecondsToTrackedTime secs = do
+  let hrs    = secs `div` secondsInHour
+  let restTime = secs - hrs * secondsInHour
+  TrackedTime { _hours = hrs, _minutes = restTime `div` 60, _seconds = restTime `mod` 60}
 
-
-countIssueTrackedSecondsIgnoringStatus :: Issue -> IO Int
-countIssueTrackedSecondsIgnoringStatus issue = do
-  currentTimestamp <- getSystemSeconds
-  return $ issue^.issueTimeRecorded + (currentTimestamp - choseIssueLastTrackTimestamp (issue^.issueLastTrackTimestamp) currentTimestamp)
-  
-
--- | Counts seconds for given 'Issue' instance.  
+-- | Counts seconds for given 'Issue' instance.
 countIssueTrackedSeconds :: Issue -> IO Int
 countIssueTrackedSeconds issue
-  | not (issue^.issueTrackingStatus) = return $ issue^.issueTimeRecorded
-  | issue^.issueTrackingStatus       = countIssueTrackedSecondsIgnoringStatus issue
-
-choseIssueLastTrackTimestamp :: Int -> Int -> Int
-choseIssueLastTrackTimestamp 0 currentTimestamp = currentTimestamp 
-choseIssueLastTrackTimestamp timestamp _        = timestamp
-
--- | Count 'TrackedTime' for given 'Issue' instance.
-countIssueTrackedTime :: Issue -> IO TrackedTime
-countIssueTrackedTime issue = convertSecondsToTrackedTime <$> countIssueTrackedSeconds issue
-
-
+  | not (issue^.issueTrackingStatus) = return $ issue^.issueTimeTracked
+  | issue^.issueTrackingStatus       = do
+      currentTimestamp <- getSystemSeconds
+      return $ issue^.issueTimeTracked + (currentTimestamp - issue^.issueLastTrackTimestamp)
+  | otherwise                        = return 0  
+     
+-- | Counts 'TrackedTime' for given 'Project' instance.
 countProjectTrackedTime :: Project -> IO TrackedTime
 countProjectTrackedTime project = do
   totalSecondsCount <- mapM countIssueTrackedSeconds (project^.projectIssues)

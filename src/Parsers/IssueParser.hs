@@ -1,31 +1,23 @@
 {-# LANGUAGE RecordWildCards #-}
 
--- | Module provides parser combinators for issue parsing.
+-- | Module provides parser for issue parsing.
 module Parsers.IssueParser 
   ( parseIssues
   , parseProjectIssues
   , projectIssue
   ) where
 
-import Text.Megaparsec
-import Text.Megaparsec.Char
-import Text.Megaparsec.Error
-import qualified Text.Megaparsec.Lexer as L
-import Text.Megaparsec.String
-
-import Data.Time.Format
-import Data.Time.Calendar
-
-import Control.Applicative
-import Control.Monad (void)
-
 import Model.Issue
 import Model.TrackedTime
 import Utils.TrackedTimeUtils(trackedTimeToInt)
-
-import Data.Time.Clock.System
-
 import Parsers.BaseParsers
+
+import Text.Megaparsec
+import qualified Text.Megaparsec.Lexer as L
+import Text.Megaparsec.String
+
+import Control.Monad(void)
+
 
 -- | Parse issue from file.
 -- Returns list of Either with parsed 'Issue' instances and errors.
@@ -34,9 +26,11 @@ parseIssues path = do
   contents <- readFile path
   return $ map (parse issue "") (lines contents)
 
+-- | Parse project style issue.
 projectIssue :: Parser Issue
 projectIssue = char '#' *> sc *> issue <* some newline
 
+-- | Parse projects style issues.
 parseProjectIssues :: Parser [Issue]
 parseProjectIssues = many projectIssue
 
@@ -44,17 +38,17 @@ parseProjectIssues = many projectIssue
 issue :: Parser Issue
 issue = do
   sc
-  _issueName               <- letterString
-  char '|'
+  _issueName               <- letterString 
+  void $ char '|' 
   _issuePriority           <- priority
-  char '|'
+  void $ char '|'
   _issueCreationDate       <- creationDate
   let _issueLastTrackTimestamp = 0
-  char '|'
-  _issueTimeRecorded       <- trackedTimeToInt <$> timeTracked
-  char '|'
+  void $ char '|'
+  _issueTimeTracked       <- trackedTimeToInt <$> timeTracked
+  void $ char '|'
   _issueTrackingStatus     <- trackingStatus
-  char '|'
+  void $ char '|'
   _issueDescription        <- concat <$> description
   return Issue {..}
 
@@ -67,9 +61,9 @@ priority = fromIntegral <$> L.integer <* sc
 timeTracked :: Parser TrackedTime
 timeTracked = do
   _hours   <- fromIntegral <$> L.integer
-  char ':'
+  void $ char ':'
   _minutes <- minsOrSecs
-  char ':'
+  void $ char ':'
   _seconds <- minsOrSecs
 
   TrackedTime {..} <$ sc
@@ -90,4 +84,4 @@ trackingStatus =  read <$> choice [string "True", string "False"] <* sc
 
 -- | Parse issues description
 description :: Parser [String]
-description = char '[' *> some word <* char ']'
+description = char '[' *> many word <* char ']'

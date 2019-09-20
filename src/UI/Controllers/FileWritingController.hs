@@ -1,19 +1,27 @@
-module UI.Controllers.FileWritingController where
+
+-- | Module provide functions for projects data export.
+module UI.Controllers.FileWritingController
+     ( exportProjects
+     , initFolderChooserDialog
+     ) where
 
 import Graphics.UI.Gtk
 import qualified Graphics.UI.Gtk.ModelView as View
 
 import Model.Types(ContextIO)
+import Model.TypesLenses
+import Utils.ExportUtils()
+
 import Control.Monad.Reader
 import Control.Lens.Operators
-import Model.TypesLenses
-import Utils.ExportUtils
 
+import System.FilePath.Posix
+
+-- | Init dialog for export folder choosing.
 initFolderChooserDialog :: Window -> IO FileChooserDialog
 initFolderChooserDialog win =
   fileChooserDialogNew
-              (Just $ "Demo of the standard dialog to select "
-                         ++ "an existing file")
+              (Just "Chose export folder")
               (Just win)
               FileChooserActionSelectFolder
               [("gtk-cancel"
@@ -21,19 +29,20 @@ initFolderChooserDialog win =
               ,("gtk-open"
                , ResponseAccept)]
 
-
+-- | Export current projects data into file.
 exportProjects :: FileChooserDialog -> ContextIO ()
 exportProjects dialog = do
-  response <- lift $ dialogRun dialog
-  case response of
-    ResponseAccept -> do Just folderName <- lift $ fileChooserGetFilename dialog
+  resp <- liftIO $ dialogRun dialog
+  case resp of
+    ResponseAccept -> do Just folderName <- liftIO $ fileChooserGetFilename dialog
                          writeProjects folderName
-    ResponseCancel -> return ()
-    ResponseDeleteEvent -> return ()
-  lift $ widgetHide dialog
+    _              -> return ()
+  liftIO $ widgetHide dialog
 
+-- | Write project to chosen folder.
+-- For export file specified name 'exportData.proj'
 writeProjects :: FilePath -> ContextIO ()
 writeProjects folderPath = do
   context <- ask
-  projects <- lift $ View.listStoreToList (context^.projectsStore)
-  lift $ writeFile (folderPath ++ "\\exportData.proj") (concatMap show projects)
+  projects <- liftIO $ View.listStoreToList (context^.projectsStore)
+  liftIO $ writeFile (folderPath ++ [pathSeparator] ++"exportData.proj") (concatMap show projects)

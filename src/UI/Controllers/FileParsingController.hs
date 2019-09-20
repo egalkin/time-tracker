@@ -1,3 +1,5 @@
+
+-- | Module provide functions for choosing and handling imported from file data.
 module UI.Controllers.FileParsingController
      ( initFileChooserDialog
      , importProjects
@@ -7,27 +9,31 @@ module UI.Controllers.FileParsingController
 import Graphics.UI.Gtk
 import qualified Graphics.UI.Gtk.ModelView as View
 
-import Data.IORef
-import Data.Either
-
 import Model.Types(ContextIO)
 import Model.Issue
 import Model.Project
 import Model.TypesLenses
-import Control.Lens.Operators
-import Text.Megaparsec.Error
+import UI.Notifications
 import Parsers.IssueParser
 import Parsers.ProjectParser
-import Utils.TimeUtils
-import UI.Notifications
-import Data.Maybe
+
+import Data.IORef
+import Data.Either
+
+import Control.Lens.Operators
 import Control.Monad.Reader
 
+import Text.Megaparsec.Error
+
+
+-- | Type represents file extension.
+type Extension = String
+
+-- | Init dialog for import source file choosing.
 initFileChooserDialog :: Window -> IO FileChooserDialog
 initFileChooserDialog win =
   fileChooserDialogNew
-              (Just $ "Demo of the standard dialog to select "
-                         ++ "an existing file")
+              (Just "Chose import file")
               (Just win)
               FileChooserActionOpen
               [("gtk-cancel"
@@ -35,69 +41,74 @@ initFileChooserDialog win =
               ,("gtk-open"
                , ResponseAccept)]
 
-setFileExtensionFilter :: FileChooserDialog -> (String, String) -> IO FileChooserDialog
-setFileExtensionFilter dialog (extension, exName) = do
-  filter <- fileFilterNew
-  fileFilterAddPattern filter extension
-  fileFilterSetName filter exName
-  fileChooserSetFilter dialog filter
+-- | Sets filter on shown in dialogs files
+setFileExtensionFilter :: FileChooserDialog -> Extension -> IO FileChooserDialog
+setFileExtensionFilter dialog extension = do
+  filt <- fileFilterNew
+  fileFilterAddPattern filt extension
+  fileChooserSetFilter dialog filt
   return dialog
 
+-- | Import projects from chosen file.
 importProjects :: FileChooserDialog -> ContextIO ()
 importProjects dialog = do
-  lift $ setFileExtensionFilter dialog projectsExtension
-  lift $ widgetShow dialog
-  response <- lift $ dialogRun dialog
-  case response of
-    ResponseAccept -> do Just fileName      <- lift $ fileChooserGetFilename dialog
-                         parsedProjectsData <- lift $ parseProjectsFromFile fileName
+  void $ liftIO $ setFileExtensionFilter dialog projectsExtension
+  liftIO $ widgetShow dialog
+  resp <- liftIO $ dialogRun dialog
+  case resp of
+    ResponseAccept -> do Just fileName      <- liftIO $ fileChooserGetFilename dialog
+                         parsedProjectsData <- liftIO $ parseProjectsFromFile fileName
                          handleParsedProjectsData parsedProjectsData
-    ResponseCancel -> return ()
-    ResponseDeleteEvent -> return ()
-  lift $ widgetHide dialog
+    _              -> return ()
+  liftIO $ widgetHide dialog
 
-
-parseIssuesFromFile :: FileChooserDialog -> Int -> ContextIO ()
-parseIssuesFromFile dialog project = do
-  lift $ setFileExtensionFilter dialog issuesExtension
-  lift $ widgetShow dialog
-  response <- lift $ dialogRun dialog
-  case response of
-    ResponseAccept -> do Just fileName    <- lift $ fileChooserGetFilename dialog
-                         parsedIssuesData <- lift $ parseIssues fileName
-                         handleParsedData parsedIssuesData project
-
-    ResponseCancel -> return ()
-    ResponseDeleteEvent -> return ()
-  lift $ widgetHide dialog
-
-importIssues :: FileChooserDialog -> ContextIO ()
-importIssues dialog = do
-  context <- ask
-  lift $ putStrLn "Hai"
-  activeProject <- lift $ readIORef (context^.activeProject)
-  case activeProject of
-    Just project -> parseIssuesFromFile dialog project
-    Nothing      -> showNoProjectChosen
-
+-- | Handles correctly parsed data and ignores invalid's one.
 handleParsedProjectsData :: Either (ParseError Char Dec) [Project] -> ContextIO ()
 handleParsedProjectsData parsedData = do
   context <- ask
   case parsedData of
-    Left err       -> return ()
-    Right projects -> lift $ mapM_ (View.listStoreAppend (context^.projectsStore)) projects
+    Left _         -> return ()
+    Right projects -> liftIO $ mapM_ (View.listStoreAppend (context^.projectsStore)) projects
 
-handleParsedData :: [Either (ParseError Char Dec) Issue] -> Int -> ContextIO ()
-handleParsedData issues project = do
+-- | Imports issues from file.
+importIssues :: FileChooserDialog -> ContextIO ()
+importIssues dialog = do
   context <- ask
-  activeRow     <- lift $ View.listStoreGetValue (context^.projectsStore) project
+  actProject <- liftIO $ readIORef (context^.activeProject)
+  case actProject of
+    Just project -> parseIssuesFromFile dialog project
+    Nothing      -> showNoProjectChosen
+
+-- | Parse imported issues and add them to state.
+parseIssuesFromFile :: FileChooserDialog -> Int -> ContextIO ()
+parseIssuesFromFile dialog project = do
+  void $ liftIO $ setFileExtensionFilter dialog issuesExtension
+  liftIO $ widgetShow dialog
+  resp <- liftIO $ dialogRun dialog
+  case resp of
+    ResponseAccept -> do Just fileName    <- liftIO $ fileChooserGetFilename dialog
+                         parsedIssuesData <- liftIO $ parseIssues fileName
+                         handleParsedIssuesData parsedIssuesData project
+
+    _              -> return ()
+  liftIO $ widgetHide dialog
+
+-- | Handles correctly parsed data and ignores invalid's one.
+handleParsedIssuesData :: [Either (ParseError Char Dec) Issue] -> Int -> ContextIO ()
+handleParsedIssuesData issues project = do
+  context <- ask
+  activeRow     <- liftIO $ View.listStoreGetValue (context^.projectsStore) project
   let (_, correctlyParsedIssues) = partitionEithers issues
   let newActiveRow = activeRow & (projectIssues %~ (++correctlyParsedIssues))
-  lift $ do
+  liftIO $ do
     View.listStoreClear (context^.issuesStore)
     mapM_ (View.listStoreAppend (context^.issuesStore)) (newActiveRow^.projectIssues)
     View.listStoreSetValue (context^.projectsStore) project newActiveRow
 
-issuesExtension = ("*.is", "Files with issues data")
+-- | Return extension for issues file.
+issuesExtension :: Extension
+issuesExtension = "*.is"
 
-projectsExtension = ("*.proj", "Files with project data")
+-- | Return extension for projects file.
+projectsExtension :: Extension
+projectsExtension = "*.proj"
