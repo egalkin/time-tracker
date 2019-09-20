@@ -1,4 +1,4 @@
-module Utils.TrackedTimeUtils 
+module Utils.TrackedTimeUtils
      ( convertSecondsToTrackedTime
      , countIssueTrackedSeconds
      , countProjectTrackedTime
@@ -32,9 +32,17 @@ countIssueTrackedSeconds issue
   | not (issue^.issueTrackingStatus) = return $ issue^.issueTimeTracked
   | issue^.issueTrackingStatus       = do
       currentTimestamp <- getSystemSeconds
-      return $ issue^.issueTimeTracked + (currentTimestamp - issue^.issueLastTrackTimestamp)
-  | otherwise                        = return 0  
-     
+      return $ issue^.issueTimeTracked + (currentTimestamp - choseIssueLastTrackTimestamp issue currentTimestamp)
+  | otherwise                        = return 0
+
+-- | If last tracked timestamp is 0 then issue was just parsed
+-- and last tracked timestamp is now.
+choseIssueLastTrackTimestamp :: Issue -> Int -> Int
+choseIssueLastTrackTimestamp issue currentTimestamp
+  | issue^.issueLastTrackTimestamp == 0 = currentTimestamp
+  | otherwise                           = issue^.issueLastTrackTimestamp
+  
+
 -- | Counts 'TrackedTime' for given 'Project' instance.
 countProjectTrackedTime :: Project -> IO TrackedTime
 countProjectTrackedTime project = do

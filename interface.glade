@@ -12,11 +12,6 @@
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
-  <object class="GtkImage" id="image1">
-    <property name="visible">True</property>
-    <property name="xalign">0.47999998927116394</property>
-    <property name="stock">gtk-missing-image</property>
-  </object>
   <object class="GtkWindow" id="appWindow">
     <property name="height_request">600</property>
     <property name="title" translatable="yes">Egor's time tracker</property>
@@ -36,27 +31,24 @@
                   <object class="GtkMenu" id="menu1">
                     <property name="visible">True</property>
                     <child>
-                      <object class="GtkImageMenuItem" id="exportProjectsItem">
+                      <object class="GtkMenuItem" id="exportProjectsItem">
+                        <property name="visible">True</property>
                         <property name="label" translatable="yes">Export projects</property>
-                        <property name="visible">True</property>
-                        <property name="image">image1</property>
-                        <property name="use_stock">False</property>
+                        <property name="use_underline">True</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem" id="importProjectsItem">
+                      <object class="GtkMenuItem" id="importProjectsItem">
+                        <property name="visible">True</property>
                         <property name="label" translatable="yes">Import projects</property>
-                        <property name="visible">True</property>
-                        <property name="image">image2</property>
-                        <property name="use_stock">False</property>
+                        <property name="use_underline">True</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem" id="importIssuesItem">
-                        <property name="label" translatable="yes">Import issues</property>
+                      <object class="GtkMenuItem" id="importIssuesItem">
                         <property name="visible">True</property>
-                        <property name="image">image3</property>
-                        <property name="use_stock">False</property>
+                        <property name="label" translatable="yes">Import issues</property>
+                        <property name="use_underline">True</property>
                       </object>
                     </child>
                   </object>
@@ -539,16 +531,5 @@
         </child>
       </object>
     </child>
-  </object>
-  <object class="GtkImage" id="image2">
-    <property name="visible">True</property>
-    <property name="xalign">0.47999998927116394</property>
-    <property name="stock">gtk-missing-image</property>
-  </object>
-  <object class="GtkImage" id="image3">
-    <property name="visible">True</property>
-    <property name="xalign">0.46000000834465027</property>
-    <property name="yalign">0.57999998331069946</property>
-    <property name="stock">gtk-missing-image</property>
   </object>
 </interface>

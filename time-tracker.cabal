@@ -67,7 +67,6 @@ library
     , directory
     , data-default
     , filepath
-    , void
   default-language: Haskell2010
 
 executable time-tracker-exe
