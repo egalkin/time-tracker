@@ -56,9 +56,10 @@ importProjects dialog = do
   liftIO $ widgetShow dialog
   resp <- liftIO $ dialogRun dialog
   case resp of
-    ResponseAccept -> do Just fileName      <- liftIO $ fileChooserGetFilename dialog
-                         parsedProjectsData <- liftIO $ parseProjectsFromFile fileName
-                         handleParsedProjectsData parsedProjectsData
+    ResponseAccept -> do 
+      Just fileName      <- liftIO $ fileChooserGetFilename dialog
+      parsedProjectsData <- liftIO $ parseProjectsFromFile fileName
+      handleParsedProjectsData parsedProjectsData
     _              -> return ()
   liftIO $ widgetHide dialog
 
@@ -86,10 +87,10 @@ parseIssuesFromFile dialog project = do
   liftIO $ widgetShow dialog
   resp <- liftIO $ dialogRun dialog
   case resp of
-    ResponseAccept -> do Just fileName    <- liftIO $ fileChooserGetFilename dialog
-                         parsedIssuesData <- liftIO $ parseIssues fileName
-                         handleParsedIssuesData parsedIssuesData project
-
+    ResponseAccept -> do 
+      Just fileName    <- liftIO $ fileChooserGetFilename dialog
+      parsedIssuesData <- liftIO $ parseIssues fileName
+      handleParsedIssuesData parsedIssuesData project
     _              -> return ()
   liftIO $ widgetHide dialog
 

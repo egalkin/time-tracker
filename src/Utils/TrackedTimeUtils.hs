@@ -14,7 +14,6 @@ import Data.List(foldl')
 
 import Control.Lens.Operators
 
-
 -- | Converts 'TrackedTime' to seconds time representation.
 trackedTimeToInt :: TrackedTime -> Int
 trackedTimeToInt time = time^.hours * 3600 + time^.minutes * 60 + time^.seconds

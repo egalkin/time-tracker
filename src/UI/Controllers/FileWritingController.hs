@@ -34,8 +34,9 @@ exportProjects :: FileChooserDialog -> ContextIO ()
 exportProjects dialog = do
   resp <- liftIO $ dialogRun dialog
   case resp of
-    ResponseAccept -> do Just folderName <- liftIO $ fileChooserGetFilename dialog
-                         writeProjects folderName
+    ResponseAccept -> do 
+      Just folderName <- liftIO $ fileChooserGetFilename dialog
+      writeProjects folderName
     _              -> return ()
   liftIO $ widgetHide dialog
 

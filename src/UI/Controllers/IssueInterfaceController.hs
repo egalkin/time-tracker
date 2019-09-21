@@ -65,8 +65,8 @@ writeActiveIssue = do
   selectedRow <- liftIO $ treeSelectionGetSelected selection
   case selectedRow of
     Just iter -> liftIO $ do
-                   issueIter <- treeModelSortConvertIterToChildIter (context^.sortedIssuesStore) iter
-                   writeIORef (context^.activeIssue) (Just $ listStoreIterToIndex issueIter)
+      issueIter <- treeModelSortConvertIterToChildIter (context^.sortedIssuesStore) iter
+      writeIORef (context^.activeIssue) (Just $ listStoreIterToIndex issueIter)
     Nothing   -> return ()
 
 -- | Clear all issue of chosen project.
@@ -105,11 +105,11 @@ removeIssueHelper projectId = do
   actIssue <- liftIO $ readIORef (context^.activeIssue)
   case actIssue of
     Just issueId -> liftIO $ do
-                             View.listStoreRemove (context^.issuesStore) issueId
-                             newIssues <- View.listStoreToList (context^.issuesStore)
-                             actProject <- View.listStoreGetValue (context^.projectsStore) projectId
-                             let newActiveProject = actProject & (projectIssues .~ newIssues)
-                             View.listStoreSetValue (context^.projectsStore) projectId newActiveProject
+      View.listStoreRemove (context^.issuesStore) issueId
+      newIssues <- View.listStoreToList (context^.issuesStore)
+      actProject <- View.listStoreGetValue (context^.projectsStore) projectId
+      let newActiveProject = actProject & (projectIssues .~ newIssues)
+      View.listStoreSetValue (context^.projectsStore) projectId newActiveProject
     Nothing      -> showNoIssueChosen
 
 -- | Set information in dialog about issue on double click.
@@ -180,12 +180,12 @@ updateIssueHelper project path issue = do
   context <- ask
   case issue of
     Right iss -> liftIO $ do
-                          actProject <- View.listStoreGetValue (context^.projectsStore)  project
-                          updatedIssue <- updateIssueTiming iss
-                          View.listStoreSetValue (context^.issuesStore) (head path) updatedIssue
-                          updatedIssues <- View.listStoreToList (context^.issuesStore)
-                          let newActiveProject = actProject & (projectIssues .~ updatedIssues)
-                          View.listStoreSetValue (context^.projectsStore) project newActiveProject
+      actProject <- View.listStoreGetValue (context^.projectsStore)  project
+      updatedIssue <- updateIssueTiming iss
+      View.listStoreSetValue (context^.issuesStore) (head path) updatedIssue
+      updatedIssues <- View.listStoreToList (context^.issuesStore)
+      let newActiveProject = actProject & (projectIssues .~ updatedIssues)
+      View.listStoreSetValue (context^.projectsStore) project newActiveProject
     Left err  -> showCustomNotification err
 
 -- | Add new issue to active project.
@@ -228,9 +228,9 @@ addIssueHelper activeRow project issue = do
   context <- ask
   case issue of
     Right iss -> liftIO $ do
-                          let newActiveRow = activeRow & (projectIssues %~ (iss :))
-                          View.listStoreInsert (context^.issuesStore) 0 iss
-                          View.listStoreSetValue (context^.projectsStore) project newActiveRow
+      let newActiveRow = activeRow & (projectIssues %~ (iss :))
+      View.listStoreInsert (context^.issuesStore) 0 iss
+      View.listStoreSetValue (context^.projectsStore) project newActiveRow
     Left err  -> showCustomNotification err
 
 -- | Gets issue description from 'TextView'

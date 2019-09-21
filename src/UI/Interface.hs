@@ -18,9 +18,6 @@ import UI.Controllers.FileWritingController
 import Control.Monad.Reader
 import Control.Concurrent
 
-
-
-
 -- | Inits app and set all behaviour logic.
 initApp :: IO ()
 initApp = do
@@ -101,8 +98,8 @@ initApp = do
   -- sends action to main Gtk thread.
   void $ forkIO $
     sequence_ $ repeat ( do
-    threadDelay 500000
-    postGUISync $ runReaderT (displayIssues TimeHelperThread) interfaceMainContext
+      threadDelay 500000
+      postGUISync $ runReaderT (displayIssues TimeHelperThread) interfaceMainContext
    )
 
   widgetShowAll win

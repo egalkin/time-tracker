@@ -57,6 +57,6 @@ removeProject = do
   currentActiveProject <- liftIO $ readIORef $ context^.activeProject
   case currentActiveProject of
     Just project -> liftIO $ do
-                      View.listStoreRemove (context^.projectsStore) project
-                      View.listStoreClear (context^.issuesStore)
+      View.listStoreRemove (context^.projectsStore) project
+      View.listStoreClear (context^.issuesStore)
     Nothing      -> showNoProjectChosen
