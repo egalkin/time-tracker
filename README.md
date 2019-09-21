@@ -14,4 +14,7 @@ Issues data extension : "*.is".
 
 Grammar examples you can find in "testIssueData.is" and "exportData.proj".
 
+## Usage
+
+To update issue's value double click on it.  
   
