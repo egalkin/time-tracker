@@ -49,7 +49,7 @@ issue = do
   void $ char '|'
   _issueTrackingStatus     <- trackingStatus
   void $ char '|'
-  _issueDescription        <- concat <$> description
+  _issueDescription        <- description
   return Issue {..}
 
 
@@ -83,5 +83,5 @@ trackingStatus :: Parser Bool
 trackingStatus =  read <$> choice [string "True", string "False"] <* sc
 
 -- | Parse issues description
-description :: Parser [String]
-description = char '[' *> many word <* char ']'
+description :: Parser String
+description = char '[' *> many (noneOf  ['[', ']']) <* char ']'
