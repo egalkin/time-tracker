@@ -17,7 +17,6 @@ import Data.IORef
 import Control.Monad.Reader
 import Control.Lens.Operators
 
-
 -- | Add new project to app state and view.
 addProject :: ContextIO ()
 addProject = do

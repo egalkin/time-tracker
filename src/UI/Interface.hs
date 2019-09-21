@@ -43,7 +43,7 @@ initApp = do
   fileChooserDialog                <- initFileChooserDialog win
   folderChooserDialog              <- initFolderChooserDialog win
 
-  insertProjectButton          <- builderGetObject gui castToButton "insertProjectButton"
+  addProjectButton             <- builderGetObject gui castToButton "addProjectButton"
   removeProjectButton          <- builderGetObject gui castToButton "removeProjectButton"
   clearProjectsButton          <- builderGetObject gui castToButton "clearProjectsButton"
   addIssueButton               <- builderGetObject gui castToButton "addIssueButton"
@@ -65,26 +65,8 @@ initApp = do
   void $ on importIssuesItem menuItemActivated
     $ (runReaderT $ importIssues fileChooserDialog) interfaceMainContext
 
-  void $ on insertProjectButton buttonActivated
+  void $ on addProjectButton buttonActivated
     $ runReaderT addProject interfaceMainContext
-
-  void $ on projectsViewItem cursorChanged
-    $ runReaderT (displayIssues GtkThread) interfaceMainContext
-
-  void $ on issuesViewItem cursorChanged
-    $ runReaderT writeActiveIssue interfaceMainContext
-
-  void $ on removeIssueButton buttonActivated
-    $ runReaderT removeIssue interfaceMainContext
-
-  void $ on clearIssuesButton buttonActivated
-    $ runReaderT clearIssues interfaceMainContext
-
-  void $ on issuesViewItem rowActivated
-    $ \path _ -> (runReaderT $ displayIssueInformation issueDialog issueActionButton path) interfaceMainContext
-
-  void $ on addIssueButton buttonActivated
-    $ (runReaderT $ addIssue issueDialog issueActionButton) interfaceMainContext
 
   void $ on removeProjectButton buttonActivated
     $ runReaderT removeProject interfaceMainContext
@@ -94,6 +76,25 @@ initApp = do
 
   void $ on showProjectTrackedTimeButton buttonActivated
     $ (runReaderT $ showProjectTrackedTime trackedTimeDialog) interfaceMainContext
+
+  void $ on projectsViewItem cursorChanged
+    $ runReaderT (displayIssues GtkThread) interfaceMainContext
+
+  void $ on addIssueButton buttonActivated
+    $ (runReaderT $ addIssue issueDialog issueActionButton) interfaceMainContext
+
+  void $ on removeIssueButton buttonActivated
+    $ runReaderT removeIssue interfaceMainContext
+
+  void $ on clearIssuesButton buttonActivated
+    $ runReaderT clearIssues interfaceMainContext
+
+  void $ on issuesViewItem cursorChanged
+    $ runReaderT writeActiveIssue interfaceMainContext
+
+  void $ on issuesViewItem rowActivated
+    $ \path _ -> (runReaderT $ displayIssueInformation issueDialog issueActionButton path) interfaceMainContext
+
 
   -- | This block responsible for time ticking show.
   -- Won't cause any data race, because postGUISync

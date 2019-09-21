@@ -41,7 +41,7 @@ displayIssues threadType = do
                    displayIssuesHelper threadType [listStoreIterToIndex issueIter]
     Nothing   -> return ()
 
--- | Updates and shows issues if currently selected project. 
+-- | Updates and shows issues if currently selected project.
 displayIssuesHelper :: ThreadType -> TreePath -> ContextIO ()
 displayIssuesHelper threadType path = do
   context <- ask
@@ -155,7 +155,7 @@ showAndUpdateIssue dialog project path = do
     _              -> return ()
   liftIO $ widgetHide dialog
   resetIssueFieldsState
- 
+
 -- | Update issue information.
 updateIssue :: Issue -> ContextIO (Either String Issue)
 updateIssue issue = do
@@ -173,7 +173,7 @@ updateIssue issue = do
               , _issueCreationDate       = issue^.issueCreationDate
               , _issueLastTrackTimestamp = timestamp
             }
-  
+
 -- | Update information about issue in view.
 updateIssueHelper :: Int -> TreePath -> Either String Issue -> ContextIO ()
 updateIssueHelper project path issue = do
@@ -209,7 +209,7 @@ addIssueToProject dialog project = do
     ResponseAccept -> buildIssue >>= addIssueHelper actProject project
     _              -> return ()
   liftIO $ widgetHide dialog
-  
+
 buildIssue :: ContextIO (Either String Issue)
 buildIssue = do
   fieldsBundle <- asks (^.issueUiFieldsBundle)
