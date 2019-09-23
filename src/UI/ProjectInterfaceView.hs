@@ -9,13 +9,14 @@ module UI.ProjectInterfaceView
 import Graphics.UI.Gtk
 import qualified Graphics.UI.Gtk.ModelView as View
 
+import Control.Monad(void)
+import Control.Lens.Operators
+
 import Model.Types(ProjectUiFieldsBundle(..))
 import Model.Project
 import Model.TypesLenses
 import Utils.ViewUtils
 
-import Control.Monad(void)
-import Control.Lens.Operators
 
 -- | Set up projects TreeView configuration.
 setupProjectsView :: TreeViewClass view

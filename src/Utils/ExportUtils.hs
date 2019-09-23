@@ -3,10 +3,11 @@
 -- | Module provides show instances for state exporting.
 module Utils.ExportUtils where
 
+import Data.List
+
 import Model.Issue
 import Model.Project
 import Utils.TrackedTimeUtils
-import Data.List
 
 instance Show Project where
   show project = 
@@ -22,4 +23,5 @@ instance Show Issue where
     , show (_issueCreationDate issue)
     , show $ convertSecondsToTrackedTime (_issueTimeTracked issue)
     , show (_issueTrackingStatus issue)
-    , "["++ _issueDescription issue ++"]"]
+    , "["++ _issueDescription issue ++"]"
+    ]

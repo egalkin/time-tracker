@@ -5,14 +5,14 @@ module Parsers.ProjectParser
      ( parseProjectsFromFile
      )where
 
-import Model.Project
-import Parsers.IssueParser
-import Parsers.BaseParsers
-
 import Text.Megaparsec
 import Text.Megaparsec.String
 
 import Control.Monad (void)
+
+import Model.Project
+import Parsers.IssueParser
+import Parsers.BaseParsers
 
 -- | Parse project.
 project :: Parser Project

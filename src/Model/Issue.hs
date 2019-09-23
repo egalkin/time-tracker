@@ -11,15 +11,15 @@ import Data.Time.Format
 import Data.Binary
 
 -- | This type stores data about issue.
-data Issue = Issue {
-    _issueName               :: String
+data Issue = Issue
+  {  _issueName              :: String
   , _issuePriority           :: Int
   , _issueCreationDate       :: Day
   , _issueLastTrackTimestamp :: Int
   , _issueTimeTracked        :: Int
   , _issueDescription        :: String
   , _issueTrackingStatus     :: Bool
-}
+  }
 
 -- | This instance used to provide serialization opportunity.
 instance Binary Issue where

@@ -6,6 +6,9 @@ module UI.Interface
 
 import Graphics.UI.Gtk
 
+import Control.Monad.Reader
+import Control.Concurrent
+
 import Model.Types(ThreadType(..))
 import UI.PrimaryInterface
 import UI.Dialogs
@@ -15,8 +18,6 @@ import UI.Controllers.IssueInterfaceController
 import UI.Controllers.FileParsingController
 import UI.Controllers.FileWritingController
 
-import Control.Monad.Reader
-import Control.Concurrent
 
 -- | Inits app and set all behaviour logic.
 initApp :: IO ()

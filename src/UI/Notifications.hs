@@ -8,11 +8,11 @@ module UI.Notifications
 
 import Graphics.UI.Gtk
 
-import Model.Types(Message, ContextIO)
-import Model.TypesLenses
-
 import Control.Lens.Operators
 import Control.Monad.Reader
+
+import Model.Types(Message, ContextIO)
+import Model.TypesLenses
 
 -- | Shows notification with given message.
 showNotification :: Message -> ContextIO ()

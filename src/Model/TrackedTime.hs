@@ -6,8 +6,8 @@ module Model.TrackedTime
      ) where
 
 -- | This type stores data about tracked time.
-data TrackedTime = TrackedTime {
-    _hours   :: Int
+data TrackedTime = TrackedTime 
+  { _hours   :: Int
   , _minutes :: Int
   , _seconds :: Int
 }

@@ -3,12 +3,12 @@
 -- | Module contains lenses for all Data types.
 module Model.TypesLenses where
 
+import Control.Lens
+
 import Model.Types
 import Model.Project
 import Model.Issue
 import Model.TrackedTime
-
-import Control.Lens
 
 makeLenses ''Project
 makeLenses ''ProjectUiFieldsBundle

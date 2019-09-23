@@ -6,6 +6,12 @@ module UI.Controllers.IssueInterfaceController where
 import Graphics.UI.Gtk
 import qualified Graphics.UI.Gtk.ModelView as View
 
+import Data.IORef
+import Data.Default
+
+import Control.Monad.Reader
+import Control.Lens.Operators
+
 import Model.Types(ContextIO, ThreadType(..))
 import Model.Issue
 import Model.Project
@@ -13,13 +19,6 @@ import Model.TypesLenses
 import UI.Notifications
 import Utils.TimeUtils
 import Utils.TrackedTimeUtils
-
-import Data.IORef
-import Data.Default
-
-import Control.Monad.Reader
-import Control.Lens.Operators
-
 
 -- | Update tracked time value and change track timestamp.
 -- Used mostly for time-ticking effect.
@@ -168,12 +167,12 @@ updateIssue issue = do
     timestamp         <- getSystemSeconds
     case name of
       [] -> return $ Left "Issue's name can't be empty"
-      _  -> return $ Right $ updatedIssue {
-                _issueName               = name
+      _  -> return $ Right $ updatedIssue
+              { _issueName               = name
               , _issueTimeTracked        = trackedTime
               , _issueCreationDate       = issue^.issueCreationDate
               , _issueLastTrackTimestamp = timestamp
-            }
+              }
 
 -- | Update information about issue in view.
 updateIssueHelper :: Int -> TreePath -> Either String Issue -> ContextIO ()
@@ -252,12 +251,12 @@ constructIssue = do
     description    <- getIssueDescriptionText (fieldsBundle^.issueDescriptionField)
     creationDate   <- getCurrentDate
     timestamp      <- getSystemSeconds
-    return $ Issue {
-             _issueName               = ""
+    return $ Issue 
+           { _issueName               = ""
            , _issuePriority           = priority
            , _issueCreationDate       = creationDate
            , _issueLastTrackTimestamp = timestamp
            , _issueTimeTracked        = 0
            , _issueTrackingStatus     = trackingStatus
            , _issueDescription        = description
-         }
+           }

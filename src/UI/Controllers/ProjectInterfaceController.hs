@@ -6,16 +6,17 @@ module UI.Controllers.ProjectInterfaceController where
 import Graphics.UI.Gtk
 import qualified Graphics.UI.Gtk.ModelView as View
 
+import Data.IORef
+
+import Control.Monad.Reader
+import Control.Lens.Operators
+
 import Model.Types(ContextIO)
 import Model.Project
 import Model.TypesLenses
 import UI.Notifications
 import Utils.TimeUtils
 
-import Data.IORef
-
-import Control.Monad.Reader
-import Control.Lens.Operators
 
 -- | Add new project to app state and view.
 addProject :: ContextIO ()
@@ -44,11 +45,11 @@ buildProject = do
     creationDate <- getCurrentDate
     case name of
       [] -> return $ Left "Project name can't be empty"
-      _  -> return $ Right Project {
-                             _projectName         = name
-                           , _projectCreationDate = creationDate
-                           , _projectIssues       = []
-                           }
+      _  -> return $ Right Project 
+                   { _projectName         = name
+                   , _projectCreationDate = creationDate
+                   , _projectIssues       = []
+                   }
 
 -- | Removes active project.
 removeProject :: ContextIO ()

@@ -7,16 +7,17 @@ module Parsers.IssueParser
   , projectIssue
   ) where
 
-import Model.Issue
-import Model.TrackedTime
-import Utils.TrackedTimeUtils(trackedTimeToInt)
-import Parsers.BaseParsers
-
 import Text.Megaparsec
 import qualified Text.Megaparsec.Lexer as L
 import Text.Megaparsec.String
 
 import Control.Monad(void)
+
+import Model.Issue
+import Model.TrackedTime
+import Utils.TrackedTimeUtils(trackedTimeToInt)
+import Parsers.BaseParsers
+
 
 
 -- | Parse issue from file.

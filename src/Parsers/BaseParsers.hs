@@ -10,11 +10,11 @@ import Text.Megaparsec
 import qualified Text.Megaparsec.Lexer as L
 import Text.Megaparsec.String
 
-import Data.Time.Format
-import Data.Time.Calendar
-
 import Control.Applicative
 import Control.Monad (void)
+
+import Data.Time.Format
+import Data.Time.Calendar
 
 
 -- | Parse whitespaces.

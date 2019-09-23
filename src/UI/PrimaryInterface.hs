@@ -10,6 +10,14 @@ module UI.PrimaryInterface
 import Graphics.UI.Gtk
 import qualified Graphics.UI.Gtk.ModelView as View
 
+import Data.IORef
+import Data.Binary
+
+import Control.Monad.Reader
+import Control.Lens.Operators
+
+import System.Directory
+
 import Model.Types(ContextIO, InterfaceMainContext(..))
 import Model.Project
 import Model.Issue
@@ -18,13 +26,6 @@ import UI.ProjectInterfaceView
 import UI.IssueInterfaceView
 import UI.Controllers.IssueInterfaceController
 
-import Data.IORef
-import Data.Binary
-
-import Control.Monad.Reader
-import Control.Lens.Operators
-
-import System.Directory
 
 -- | Builds main app context used in
 -- most of functions.

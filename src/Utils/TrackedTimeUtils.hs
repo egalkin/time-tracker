@@ -4,15 +4,15 @@ module Utils.TrackedTimeUtils
      , countProjectTrackedTime
      , trackedTimeToInt) where
 
+import Control.Lens.Operators
+
+import Data.List(foldl')
+
 import Model.TrackedTime
 import Model.Issue
 import Model.Project
 import Model.TypesLenses
 import Utils.TimeUtils
-
-import Data.List(foldl')
-
-import Control.Lens.Operators
 
 -- | Converts 'TrackedTime' to seconds time representation.
 trackedTimeToInt :: TrackedTime -> Int

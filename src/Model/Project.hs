@@ -5,16 +5,16 @@ module Model.Project
      ( Project(..)
      ) where
 
-import Model.Issue
-
 import Data.Binary
 import Data.Time.Calendar
 import Data.Time.Format
 
+import Model.Issue
+
 
 -- | This type stores data about project.
-data Project = Project {
-    _projectName         :: String
+data Project = Project
+  { _projectName         :: String
   , _projectCreationDate :: Day
   , _projectIssues       :: [Issue]
 } 

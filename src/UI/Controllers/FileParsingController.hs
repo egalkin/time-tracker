@@ -9,14 +9,6 @@ module UI.Controllers.FileParsingController
 import Graphics.UI.Gtk
 import qualified Graphics.UI.Gtk.ModelView as View
 
-import Model.Types(ContextIO)
-import Model.Issue
-import Model.Project
-import Model.TypesLenses
-import UI.Notifications
-import Parsers.IssueParser
-import Parsers.ProjectParser
-
 import Data.IORef
 import Data.Either
 
@@ -24,6 +16,14 @@ import Control.Lens.Operators
 import Control.Monad.Reader
 
 import Text.Megaparsec.Error
+
+import Model.Types(ContextIO)
+import Model.Issue
+import Model.Project
+import Model.TypesLenses
+import UI.Notifications
+import Parsers.IssueParser
+import Parsers.ProjectParser
 
 
 -- | Type represents file extension.

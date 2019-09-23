@@ -8,14 +8,14 @@ module UI.Controllers.FileWritingController
 import Graphics.UI.Gtk
 import qualified Graphics.UI.Gtk.ModelView as View
 
-import Model.Types(ContextIO)
-import Model.TypesLenses
-import Utils.ExportUtils()
-
 import Control.Monad.Reader
 import Control.Lens.Operators
 
 import System.FilePath.Posix
+
+import Model.Types(ContextIO)
+import Model.TypesLenses
+import Utils.ExportUtils()
 
 -- | Init dialog for export folder choosing.
 initFolderChooserDialog :: Window -> IO FileChooserDialog

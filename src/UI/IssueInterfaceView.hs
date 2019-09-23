@@ -9,14 +9,14 @@ module UI.IssueInterfaceView
 import Graphics.UI.Gtk
 import qualified Graphics.UI.Gtk.ModelView as View
 
+import Control.Monad(void)
+import Control.Lens.Operators
+
 import Model.Types(IssueUiFieldsBundle(..))
 import Model.Issue
 import Model.TypesLenses
 import Utils.TrackedTimeUtils(convertSecondsToTrackedTime)
 import Utils.ViewUtils
-
-import Control.Monad(void)
-import Control.Lens.Operators
 
 -- | Set up issues TreeView configuration.
 setupIssuesView :: TreeViewClass view

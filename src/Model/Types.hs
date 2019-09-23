@@ -11,12 +11,12 @@ module Model.Types
 
 import Graphics.UI.Gtk
 
-import Model.Project
-import Model.Issue
+import Control.Monad.Reader
 
 import Data.IORef
 
-import Control.Monad.Reader
+import Model.Project
+import Model.Issue
 
 -- | Type represents runtime context.
 type ContextIO a = ReaderT InterfaceMainContext IO a
@@ -25,25 +25,27 @@ type ContextIO a = ReaderT InterfaceMainContext IO a
 type Message = String
 
 -- | Type show which thread have made gtk call.
-data ThreadType = GtkThread | TimeHelperThread deriving (Eq)
+data ThreadType 
+  = GtkThread
+  | TimeHelperThread deriving (Eq)
 
 -- | Type represents fields for 'Project' construction.
-newtype ProjectUiFieldsBundle = ProjectUiFieldsBundle {
-    _projectNameField :: Entry
-}
+data ProjectUiFieldsBundle = ProjectUiFieldsBundle
+  { _projectNameField :: Entry
+  }
 
 -- | Type represents fields for 'Issue' construction.
-data IssueUiFieldsBundle = IssueUiFieldsBundle {
-    _issueNameField           :: Entry
+data IssueUiFieldsBundle = IssueUiFieldsBundle
+  { _issueNameField           :: Entry
   , _issuePriorityField       :: SpinButton
   , _issueTrackingStatusField :: CheckButton
   , _issueDescriptionField    :: TextView
-}
+  }
 
 -- | Type represents main interface context and store all
 -- necessary for application data.
-data InterfaceMainContext = InterfaceMainContext {
-    _projectsStore         :: ListStore Project
+data InterfaceMainContext = InterfaceMainContext
+  { _projectsStore         :: ListStore Project
   , _sortedProjectsStore   :: TypedTreeModelSort Project
   , _projectsView          :: TreeView
   , _sortedIssuesStore     :: TypedTreeModelSort Issue
@@ -56,6 +58,6 @@ data InterfaceMainContext = InterfaceMainContext {
   , _trackedTimeStatusbar  :: Statusbar
   , _notificationDialog    :: Dialog
   , _notificationStatusbar :: Statusbar
-}
+  }
 
 

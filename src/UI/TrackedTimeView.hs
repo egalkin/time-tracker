@@ -8,16 +8,16 @@ module UI.TrackedTimeView
 import Graphics.UI.Gtk
 import qualified Graphics.UI.Gtk.ModelView as View
 
+import Control.Monad.Reader
+import Control.Lens.Operators
+
+import Data.IORef
+
 import Model.Types(ContextIO, Message)
 import Model.TrackedTime
 import Model.TypesLenses
 import UI.Notifications
 import Utils.TrackedTimeUtils
-
-import Data.IORef
-
-import Control.Monad.Reader
-import Control.Lens.Operators
 
 -- | Shows tracked time.
 showTrackedTime :: Dialog -> Message -> TrackedTime -> ContextIO ()
