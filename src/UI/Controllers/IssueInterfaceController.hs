@@ -53,6 +53,7 @@ displayIssuesHelper threadType path = do
     if threadType == TimeHelperThread then
       mapM_ (uncurry $ View.listStoreSetValue (context^.issuesStore)) (zip [0..] (updatedProjectEntity^.projectIssues))
     else do
+      writeIORef (context^.activeIssue) Nothing
       View.listStoreClear (context^.issuesStore)
       mapM_ (View.listStoreAppend (context^.issuesStore)) (updatedProjectEntity^.projectIssues)
     View.listStoreSetValue (context^.projectsStore) (head path) updatedProjectEntity
