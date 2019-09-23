@@ -69,7 +69,8 @@ initStores prView issView = do
 initProjectStore :: IO (ListStore Project)
 initProjectStore = do
   previousStateFlag <- doesFileExist "projects.dat"
-  if previousStateFlag then do
+  if previousStateFlag
+  then do
     projects <- decodeFile "projects.dat"
     updatedProjects <- mapM updateProject projects
     storeImpl updatedProjects

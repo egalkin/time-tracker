@@ -49,7 +49,8 @@ displayIssuesHelper threadType path = do
     writeIORef (context^.activeProject) (Just $ head path)
     updatedIssues <- mapM updateIssueTiming (projectEntity^.projectIssues)
     let updatedProjectEntity = projectEntity & projectIssues .~ updatedIssues
-    if threadType == TimeHelperThread then
+    if threadType == TimeHelperThread
+    then 
       mapM_ (uncurry $ View.listStoreSetValue (context^.issuesStore)) (zip [0..] (updatedProjectEntity^.projectIssues))
     else do
       writeIORef (context^.activeIssue) Nothing
