@@ -36,8 +36,8 @@ displayIssues threadType = do
   selectedRow <- liftIO $ treeSelectionGetSelected selection
   case selectedRow of
     Just iter -> do
-                   issueIter <- liftIO $ treeModelSortConvertIterToChildIter (context^.sortedProjectsStore) iter
-                   displayIssuesHelper threadType [listStoreIterToIndex issueIter]
+      issueIter <- liftIO $ treeModelSortConvertIterToChildIter (context^.sortedProjectsStore) iter
+      displayIssuesHelper threadType [listStoreIterToIndex issueIter]
     Nothing   -> return ()
 
 -- | Updates and shows issues if currently selected project.
