@@ -71,9 +71,12 @@ initProjectStore = do
   previousStateFlag <- doesFileExist "projects.dat"
   if previousStateFlag
   then do
-    projects <- decodeFile "projects.dat"
-    updatedProjects <- mapM updateProject projects
-    storeImpl updatedProjects
+    projectsData <- decodeFileOrFail "projects.dat"
+    case projectsData of 
+      Right projects -> do 
+        updatedProjects <- mapM updateProject projects
+        storeImpl updatedProjects
+      Left _         -> storeImpl []  
   else 
     storeImpl []
 
