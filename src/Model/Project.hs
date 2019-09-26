@@ -17,7 +17,7 @@ data Project = Project
   { _projectName         :: String
   , _projectCreationDate :: Day
   , _projectIssues       :: [Issue]
-} 
+  } 
 
 -- | This instance used to provide serialization opportunity.
 instance Binary Project where

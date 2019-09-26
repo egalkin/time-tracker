@@ -10,7 +10,7 @@ data TrackedTime = TrackedTime
   { _hours   :: Int
   , _minutes :: Int
   , _seconds :: Int
-}
+  }
 
 instance Show TrackedTime where
   show (TrackedTime hr mi sc) = show hr ++ ":" ++ showHelper mi ++ ":" ++ showHelper sc
