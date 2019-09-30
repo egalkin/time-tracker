@@ -36,7 +36,7 @@ instance Binary Issue where
     _issuePriority           <- get
     _issueCreationDate       <- get >>= parseTimeM True defaultTimeLocale "%Y-%-m-%-d"
     _issueLastTrackTimestamp <- get
-    _issueTimeTracked       <- get
+    _issueTimeTracked        <- get
     _issueDescription        <- get
     _issueTrackingStatus     <- get
     return Issue {..}
